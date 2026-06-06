@@ -12,7 +12,7 @@ mesh.compute_vertex_normals()
 
 
 # Resolution to voxel_size conversion
-resolution = 32
+resolution = 16
 bounding_box = mesh.get_axis_aligned_bounding_box()
 largest_dimension = max(bounding_box.get_extent())
 
@@ -25,7 +25,7 @@ voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(mesh, voxel_size=v
 # But for visualisation purposes
 
 point_cloud = mesh.sample_points_uniformly(number_of_points=1000000)
-point_cloud.paint_uniform_color([1, 0.6, 0.6])
+point_cloud.paint_uniform_color([0.2, 1, 0.2])
 
 visualised_voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud, voxel_size=voxel_size)
 

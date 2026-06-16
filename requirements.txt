@@ -1,0 +1,6 @@
+# Numerical Processing
+numpy
+
+# 3D mesh loading and voxelisation
+open3d
+trimesh

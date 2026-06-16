@@ -4,3 +4,5 @@ numpy
 # 3D mesh loading and voxelisation
 open3d
 trimesh
+
+# Need to run Set-ExecutionPolicy Unrestricted -Scope Process in PowerShell to allow the execution of the script

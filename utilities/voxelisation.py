@@ -3,7 +3,7 @@ import open3d as o3d
 import numpy as np
 
 def create_path(model_class, model_number) -> Path:
-    return Path("../model_data/model_net_10/" + model_class + "/train/" + model_class + "_" + model_number + ".off")
+    return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
 
 class MeshVoxeliser:
     def __init__(
@@ -54,11 +54,11 @@ class MeshVoxeliser:
 # The voxel grid here should be used going ahead, because we don't care about lighting
 # But for visualisation purposes
 
-model_path = create_path("chair", "0001")
+model_path = create_path("bathtub", 1)
 
 mesh_voxeliser = MeshVoxeliser(
     model_path=model_path,
-    resolution=32
+    resolution=16
 )
 
 voxel_grid = mesh_voxeliser.start()

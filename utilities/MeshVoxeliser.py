@@ -33,9 +33,11 @@ class MeshVoxeliser:
         return voxel_size
     
     def create_voxel_grid(self) -> None:
+
         self.voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(self.mesh, voxel_size=self.voxel_size)
     
     # Can come back and make the features 
+
     def visualise(self, number_of_points: int =100000, colour: tuple[float, float, float] = [0, 0, 0]) -> None:
         point_cloud = self.mesh.sample_points_uniformly(number_of_points=number_of_points)
         point_cloud.paint_uniform_color(colour)
@@ -44,6 +46,7 @@ class MeshVoxeliser:
         o3d.visualization.draw_geometries([visualised_voxel_grid])
 
     def start(self) -> o3d.geometry.VoxelGrid:
+        
         self.load_mesh()
         self.voxel_size = self.calculate_voxel_size()
         self.create_voxel_grid()

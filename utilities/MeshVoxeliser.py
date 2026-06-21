@@ -2,10 +2,21 @@ from pathlib import Path
 import open3d as o3d
 import numpy as np
 
+from MeshValidator import MeshValidator
+
 def create_path(model_class, model_number) -> Path:
     return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
 
 class MeshVoxeliser:
+    """ Class to voxelise the mesh and create a voxel grid.
+
+    Args:
+        model_path -- the path to the model.
+        resolution -- the resolution of the voxel grid.
+
+    Returns:
+        None.
+    """
     def __init__(
             self,
             model_path: Path,
@@ -20,8 +31,17 @@ class MeshVoxeliser:
         self.voxel_grid: o3d.geometry.VoxelGrid | None = None
 
     def load_mesh(self) -> None:
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
+        
         mesh = o3d.io.read_triangle_mesh(str(self.model_path))
+
+        # Need to make sure the mesh has the valid properties
+        validator = MeshValidator(mesh, resolution=self.resolution)
+        if not validator.validate_baseline():
+            print("\n This mesh is not watertight and hence its interior cannot be filled")
+        
         mesh.compute_vertex_normals()
         self.mesh = mesh
     
@@ -57,7 +77,7 @@ class MeshVoxeliser:
 # The voxel grid here should be used going ahead, because we don't care about lighting
 # But for visualisation purposes
 
-model_path = create_path("bathtub", 1)
+model_path = create_path("chair", 1)
 
 mesh_voxeliser = MeshVoxeliser(
     model_path=model_path,

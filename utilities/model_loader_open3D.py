@@ -9,7 +9,7 @@ def view_model(model_class, model_number) -> None:
         model_number - the number of the model.
 
     Returns:
-        Void.
+        None.
     """
     model_path = Path("../model_data/model_net_10/" + model_class.lower() + "/" + model_class.lower() + "_" + str(model_number).zfill(4) + ".off")
     mesh = o3d.io.read_triangle_mesh(str(model_path))
@@ -17,4 +17,4 @@ def view_model(model_class, model_number) -> None:
 
     o3d.visualization.draw_geometries([mesh])
 
-view_model("chair", 12)
+view_model("bathtub", 1)

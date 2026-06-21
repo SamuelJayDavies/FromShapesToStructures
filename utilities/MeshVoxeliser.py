@@ -4,8 +4,16 @@ import numpy as np
 
 from MeshValidator import MeshValidator
 
-def create_path(model_class, model_number) -> Path:
-    return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
+def create_path(model_class, model_number, model_dataset) -> Path:
+    if model_dataset == "model_net":
+        return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
+    elif model_dataset == "shapenet":
+        return Path("../model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/models/model_normalized.obj")
+    else:
+        raise ValueError(f"Invalid model dataset: {model_dataset}. Must be 'model_net' or 'shapenet'.")
+
+# An important point for later on is that SHAPE_NET and MODEL_NET have different x, y, z axes. So going ahead
+# only shape_net models will be compatible with the z-axis translation step
 
 class MeshVoxeliser:
     """ Class to voxelise the mesh and create a voxel grid.
@@ -13,6 +21,9 @@ class MeshVoxeliser:
     Args:
         model_path -- the path to the model.
         resolution -- the resolution of the voxel grid.
+
+    Depreciated:
+        This class now no longer supports ModelNet models, as they have different x, y, z axes. Only ShapeNet models are supported.
 
     Returns:
         None.
@@ -77,7 +88,8 @@ class MeshVoxeliser:
 # The voxel grid here should be used going ahead, because we don't care about lighting
 # But for visualisation purposes
 
-model_path = create_path("chair", 1)
+#model_path = create_path("chair", 1)   
+model_path = create_path("bottle", 1, "shapenet")
 
 mesh_voxeliser = MeshVoxeliser(
     model_path=model_path,

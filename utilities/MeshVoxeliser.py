@@ -5,6 +5,9 @@ import numpy as np
 from MeshValidator import MeshValidator
 
 def create_path(model_class, model_number, model_dataset) -> Path:
+    """
+    Create the path to the model based on the model class, model number, and dataset.
+    """
     if model_dataset == "model_net":
         return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
     elif model_dataset == "shapenet":
@@ -42,6 +45,9 @@ class MeshVoxeliser:
         self.voxel_grid: o3d.geometry.VoxelGrid | None = None
 
     def load_mesh(self) -> None:
+        """
+        Loades the mesh into the class and checks if it as all the required properties. If not, an error will be raised
+        """
         if not self.model_path.exists():
             raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
@@ -57,19 +63,26 @@ class MeshVoxeliser:
         self.mesh = mesh
     
     def calculate_voxel_size(self) -> float:
-        
+        """
+        Calculate the voxel size based on the bounding box of the mesh and the resolution.
+        """
         bounding_box = self.mesh.get_axis_aligned_bounding_box()
         largest_dimension = max(bounding_box.get_extent())
         voxel_size = largest_dimension / self.resolution
         return voxel_size
     
     def create_voxel_grid(self) -> None:
-
+        """
+        Create a voxel grid from the loaded mesh.
+        """
         self.voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(self.mesh, voxel_size=self.voxel_size)
     
     # Can come back and make the features 
 
-    def visualise(self, number_of_points: int =100000, colour: tuple[float, float, float] = [0, 0, 0]) -> None:
+    def visualise(self, number_of_points: int =100000, colour: tuple[float, float, float] = [0.5, 0.5, 0.5]) -> None:
+        """
+        Visualise the voxel grid by sampling points from the mesh and creating a voxel grid from those points.
+        """
         point_cloud = self.mesh.sample_points_uniformly(number_of_points=number_of_points)
         point_cloud.paint_uniform_color(colour)
 
@@ -77,7 +90,9 @@ class MeshVoxeliser:
         o3d.visualization.draw_geometries([visualised_voxel_grid])
 
     def start(self) -> o3d.geometry.VoxelGrid:
-        
+        """
+        Start the voxelisation process by loading the mesh, calculating the voxel size, and creating the voxel grid.
+        """
         self.load_mesh()
         self.voxel_size = self.calculate_voxel_size()
         self.create_voxel_grid()

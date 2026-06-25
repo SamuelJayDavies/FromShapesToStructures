@@ -16,7 +16,7 @@ def create_path(model_class, model_number, model_dataset) -> Path:
         raise ValueError(f"Invalid model dataset: {model_dataset}. Must be 'model_net' or 'shapenet'.")
 
 # An important point for later on is that SHAPE_NET and MODEL_NET have different x, y, z axes. So going ahead
-# only shape_net models will be compatible with the z-axis translation step
+# only shape_net models will be compatible with the y-axis translation step
 
 class MeshVoxeliser:
     """ Class to voxelise the mesh and create a voxel grid.
@@ -70,6 +70,18 @@ class MeshVoxeliser:
         largest_dimension = max(bounding_box.get_extent())
         voxel_size = largest_dimension / self.resolution
         return voxel_size
+
+    # This is done before voxelisation as it is better to have the source mesh aligned rather than later voxel grid
+    def ground_align_model(self) -> None:
+        """
+        Ground align the mesh by translating it along the y-axis so that the lowest point of the mesh is at y=0.
+        """
+        if self.mesh is None:
+            raise ValueError("Mesh not loaded. Please load the mesh before ground aligning.")
+
+        min_bound = self.mesh.get_min_bound()
+        y_offset = -min_bound[1]
+        self.mesh.translate((0, y_offset, 0))
     
     def create_voxel_grid(self) -> None:
         """
@@ -83,11 +95,11 @@ class MeshVoxeliser:
         """
         Visualise the voxel grid by sampling points from the mesh and creating a voxel grid from those points.
         """
-        point_cloud = self.mesh.sample_points_uniformly(number_of_points=number_of_points)
-        point_cloud.paint_uniform_color(colour)
+        #point_cloud = self.mesh.sample_points_uniformly(number_of_points=number_of_points)
+        #point_cloud.paint_uniform_color(colour)
 
-        visualised_voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud, voxel_size=self.voxel_size)
-        o3d.visualization.draw_geometries([visualised_voxel_grid])
+        #visualised_voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud, voxel_size=self.voxel_size)
+        o3d.visualization.draw_geometries([self.voxel_grid])
 
     def start(self) -> o3d.geometry.VoxelGrid:
         """
@@ -95,6 +107,7 @@ class MeshVoxeliser:
         """
         self.load_mesh()
         self.voxel_size = self.calculate_voxel_size()
+        self.ground_align_model()
         self.create_voxel_grid()
         return self.voxel_grid
 
@@ -104,6 +117,8 @@ class MeshVoxeliser:
 # But for visualisation purposes
 
 #model_path = create_path("chair", 1)   
+
+
 model_path = create_path("bottle", 1, "shapenet")
 
 mesh_voxeliser = MeshVoxeliser(

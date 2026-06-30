@@ -107,8 +107,7 @@ class MeshValidator:
             "has_no_self_intersections": self.has_no_self_intersections()
         }
 
-        print("Mesh Validation Results:")
-        print("------------------------")
+        print("------------------- Mesh Validation Results-------------------")
         for check, result in results.items():
             print(check + ": " + ("Passed" if result else "Failed"))
         
@@ -136,8 +135,7 @@ class MeshValidator:
             "has_no_self_intersections": self.has_no_self_intersections()
         }
 
-        print("Mesh Validation Results:")
-        print("------------------------")
+        print("------------------- Mesh Validation Results-------------------")
         for check, result in results.items():
             print(check + ": " + ("Passed" if result else "Failed"))
         

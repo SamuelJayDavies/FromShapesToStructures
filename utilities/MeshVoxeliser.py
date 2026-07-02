@@ -11,7 +11,7 @@ def create_path(model_class, model_number, model_dataset) -> Path:
     if model_dataset == "model_net":
         return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
     elif model_dataset == "shapenet":
-        return Path("../model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/models/model_normalized.obj")
+        return Path("../model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/model_normalized.obj")
     else:
         raise ValueError(f"Invalid model dataset: {model_dataset}. Must be 'model_net' or 'shapenet'.")
 

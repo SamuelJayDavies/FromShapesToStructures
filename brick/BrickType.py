@@ -1,4 +1,4 @@
-class BrickType:
+class Brick:
 
     def __init__(self, name, x_length, z_length) -> None:
         if not isinstance(name, str):
@@ -40,5 +40,6 @@ class BrickType:
         else:
             return [original_orientation, rotated_orientation]
 
+    # repr over __str__ because if __str__ isn't defined, __repr__ is used instead. 
     def __repr__(self) -> str:
         return "BrickType: " + self.name + ", x_length: " + str(self.x_length) + ", z_length: " + str(self.z_length)

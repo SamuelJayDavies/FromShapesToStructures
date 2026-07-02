@@ -82,6 +82,8 @@ class OccupancyGrid:
         print("Occupancy Grid Shape:", self.occupancy_grid.shape)
         print("Occupied Voxels: ", np.count_nonzero(self.occupancy_grid))
         print("Ground-Layer voxels: ", np.count_nonzero(self.occupancy_grid[0]))
+        for layer in range(1, self.occupancy_grid.shape[0]):
+            print(f"Layer {layer} voxels: ", np.count_nonzero(self.occupancy_grid[layer]))
                 
 model_path = create_path("bottle", 1, "shapenet")
 

@@ -1,8 +1,6 @@
-
-
 from typing import List
 
-from BrickType import Brick
+from BrickType import BrickType
 
 # Rules for a valid vocabulary should be that:
 # 1. All bricks must be valid BrickType instances
@@ -13,7 +11,7 @@ from BrickType import Brick
 
 class Brick_vocabulary:
 
-    def __init__(self, bricks: List[Brick]) -> None:
+    def __init__(self, bricks: List[BrickType]) -> None:
         """
         Initialise a brick vocabulary
         
@@ -34,8 +32,8 @@ class Brick_vocabulary:
             raise ValueError("Brick vocabulary cannot be empty.")
         
         # Check 2
-        if not all(isinstance(brick, Brick) for brick in bricks):
-            raise TypeError("All items within vocabulary must be bricks.")
+        if not all(isinstance(brick, BrickType) for brick in bricks):
+            raise TypeError("All items within vocabulary must be BrickType instances.")
         
         seen_names = set()
         seen_dimensions = set()
@@ -61,12 +59,12 @@ class Brick_vocabulary:
         print("Brick vocab succesfully saved")
         self.bricks = bricks
 
-    def bricks(self) -> List[Brick]:
+    def bricks(self) -> List[BrickType]:
         """
         Get the list of bricks in the vocabulary.
         
         Returns:
-            A list of Brick instances in the vocabulary.
+            A list of BrickType instances in the vocabulary.
         """
         return self.bricks
     
@@ -79,7 +77,7 @@ class Brick_vocabulary:
         """
         return len(self.bricks)
     
-    def __getitem__(self, index: int) -> Brick:
+    def __getitem__(self, index: int) -> BrickType:
         """
         Get a brick from the vocabulary by index.
         
@@ -111,37 +109,37 @@ class Brick_vocabulary:
 
 BASIC_BRICK_VOCABULARY = Brick_vocabulary(
     bricks=[
-        Brick(name="1x1", x_length=1, z_length=1),
-        Brick(name="1x2", x_length=1, z_length=2),
-        Brick(name="2x2", x_length=2, z_length=2),
-        Brick(name="2x4", x_length=2, z_length=4),
-        Brick(name="4x4", x_length=4, z_length=4),
+        BrickType(name="1x1", x_length=1, z_length=1),
+        BrickType(name="1x2", x_length=1, z_length=2),
+        BrickType(name="2x2", x_length=2, z_length=2),
+        BrickType(name="2x4", x_length=2, z_length=4),
+        BrickType(name="4x4", x_length=4, z_length=4),
     ]
 )
 
 ADVANCED_BRICK_VOCABULARY = Brick_vocabulary(
     bricks=[
-        Brick(name="1x1", x_length=1, z_length=1),
-        Brick(name="1x2", x_length=1, z_length=2),
-        Brick(name="1x3", x_length=1, z_length=3),
-        Brick(name="1x4", x_length=1, z_length=4),
-        Brick(name="1x6", x_length=1, z_length=6),
-        Brick(name="1x8", x_length=1, z_length=8),
-        Brick(name="2x2", x_length=2, z_length=2),
-        Brick(name="2x3", x_length=2, z_length=3),
-        Brick(name="2x4", x_length=2, z_length=4),
-        Brick(name="2x6", x_length=2, z_length=6),
-        Brick(name="2x8", x_length=2, z_length=8),
-        Brick(name="3x3", x_length=3, z_length=3),
-        Brick(name="3x4", x_length=3, z_length=4),
-        Brick(name="3x6", x_length=3, z_length=6),
-        Brick(name="3x8", x_length=3, z_length=8),
-        Brick(name="4x4", x_length=4, z_length=4),
-        Brick(name="4x6", x_length=4, z_length=6),
-        Brick(name="4x8", x_length=4, z_length=8),
-        Brick(name="6x6", x_length=6, z_length=6),
-        Brick(name="6x8", x_length=6, z_length=8),
-        Brick(name="8x8", x_length=8, z_length=8)
+        BrickType(name="1x1", x_length=1, z_length=1),
+        BrickType(name="1x2", x_length=1, z_length=2),
+        BrickType(name="1x3", x_length=1, z_length=3),
+        BrickType(name="1x4", x_length=1, z_length=4),
+        BrickType(name="1x6", x_length=1, z_length=6),
+        BrickType(name="1x8", x_length=1, z_length=8),
+        BrickType(name="2x2", x_length=2, z_length=2),
+        BrickType(name="2x3", x_length=2, z_length=3),
+        BrickType(name="2x4", x_length=2, z_length=4),
+        BrickType(name="2x6", x_length=2, z_length=6),
+        BrickType(name="2x8", x_length=2, z_length=8),
+        BrickType(name="3x3", x_length=3, z_length=3),
+        BrickType(name="3x4", x_length=3, z_length=4),
+        BrickType(name="3x6", x_length=3, z_length=6),
+        BrickType(name="3x8", x_length=3, z_length=8),
+        BrickType(name="4x4", x_length=4, z_length=4),
+        BrickType(name="4x6", x_length=4, z_length=6),
+        BrickType(name="4x8", x_length=4, z_length=8),
+        BrickType(name="6x6", x_length=6, z_length=6),
+        BrickType(name="6x8", x_length=6, z_length=8),
+        BrickType(name="8x8", x_length=8, z_length=8)
     ]
 )
 

@@ -1,4 +1,4 @@
-class Brick:
+class BrickType:
 
     def __init__(self, name, x_length, z_length) -> None:
         if not isinstance(name, str):
@@ -10,11 +10,11 @@ class Brick:
         if not isinstance(z_length, int):
             raise TypeError("z_length must be an integer.")
         
-        if x_length <= 0:
-            raise ValueError("x_length must be a positive integer.")
+        if x_length < 1:
+            raise ValueError("x_length must be at least greater than 1")
         
-        if z_length <= 0:
-            raise ValueError("z_length must be a positive integer.")
+        if z_length < 1:
+            raise ValueError("z_length must be at least greater than 1")
         
         if not name:
             raise ValueError("Name cannot be empty.")

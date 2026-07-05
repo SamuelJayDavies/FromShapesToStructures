@@ -1,6 +1,6 @@
 from typing import List
 
-from BrickType import BrickType
+from .BrickType import BrickType
 
 # Rules for a valid vocabulary should be that:
 # 1. All bricks must be valid BrickType instances

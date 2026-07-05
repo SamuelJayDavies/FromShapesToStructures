@@ -1,8 +1,8 @@
-from BrickType import BrickType
+from .BrickType import BrickType
 
 class Brick:
     def __init__(self, 
-                  brickType: BrickType, brick_id: int, y: int, z: int, x: int, orientation: tuple[int, int]) -> None:
+                  brickType: BrickType, y: int, z: int, x: int, orientation: tuple[int, int]) -> None:
         if not isinstance(brickType, BrickType):
             raise TypeError("brickType must be an instance of BrickType.")
         
@@ -11,9 +11,10 @@ class Brick:
         for param in integer_parameters:
             if not isinstance(param, int):
                 raise TypeError(param + " must be an integer.")
-            
-        if integer_parameters[:3] < 0:
-            raise ValueError("y, z, and x must be non-negative integers.")
+        
+        for param in integer_parameters:
+            if param < 0:
+                raise ValueError(param + " must be a non-negative integer.")
 
         if orientation not in brickType.orientations():
             raise ValueError("The provided orientation " + str(orientation) + " cannot be used with this brick type + " + str(brickType) + ".")
@@ -25,9 +26,8 @@ class Brick:
         self.x = x
 
         self.orientation = orientation
-        
-        self.brick_id = brick_id
-
+        self.brick_id = None
+    
     def size_x(self) -> int:
         return self.orientation[0]
     
@@ -47,4 +47,4 @@ class Brick:
         self.brick_id = brick_id
 
     def __repr__(self) -> str:
-        return "Brick Placement - Type: " + self.brickType.name + ", Position: (" + str(self.y) + ", " + str(self.z) + ", " + str(self.x) + "), Orientation: (" + str(self.orientation[0]) + ", " + str(self.orientation[1]) + "), Brick  ID: " + str(self.brick_id)
+        return "Brick Placement - Type: " + self.brickType.name + " is placed: " + str(self.is_placed()) + ", Position: (" + str(self.y) + ", " + str(self.z) + ", " + str(self.x) + "), Orientation: (" + str(self.orientation[0]) + ", " + str(self.orientation[1]) + "), Brick  ID: " + str(self.brick_id)

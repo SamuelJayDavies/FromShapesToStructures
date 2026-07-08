@@ -6,27 +6,27 @@ from MeshVoxeliser import create_path
 
 # Add more method checking to this code
 
-class OccupancyGrid:
+class ResultGrid:
     def __init__(self) -> None:
-        self.occupancy_grid: np.ndarray | None = None
+        self.result_grid: np.ndarray | None = None
         #self.grid_offset: np.ndarray | None = None
     
-    def validate_occupancy_grid(self) -> bool:
-        if self.occupancy_grid is None:
-            print("Occupancy grid is empty, please populate grid first.")
+    def validate_result_grid(self) -> bool:
+        if self.result_grid is None:
+            print("Result grid is empty, please populate grid first.")
             return False
 
-        if self.occupancy_grid.ndim != 3:
-            print("Occupancy grid is not 3D.")
+        if self.result_grid.ndim != 3:
+            print("Result grid is not 3D.")
             return False
         else:
-            if not np.any(self.occupancy_grid[0]):
-                print("Occupancy grid is not grounded.")
+            if not np.any(self.result_grid[0]):
+                print("Result grid is not grounded.")
                 return False
         
         return True
 
-    def create_occupancy_grid(self, voxel_grid: o3d.geometry.VoxelGrid) -> None:
+    def create_result_grid(self, voxel_grid: o3d.geometry.VoxelGrid) -> None:
         if voxel_grid is None:
             raise ValueError("Voxel grid is empty, please populate grid first.")
         
@@ -59,31 +59,31 @@ class OccupancyGrid:
         size_x = ordered_indices[2]
 
         shape = (size_y, size_z, size_x)
-        self.occupancy_grid = np.zeros(shape, dtype=bool)
+        self.result_grid = np.zeros(shape, dtype=bool)
 
         x_indices = voxel_indices[:, 0]
         y_indices = voxel_indices[:, 1]
         z_indices = voxel_indices[:, 2]
 
-        self.occupancy_grid[y_indices, z_indices, x_indices] = True
+        self.result_grid[y_indices, z_indices, x_indices] = True
 
-        if self.validate_occupancy_grid():
-            print("------------------------ Occupancy Grid Validation ------------------------")
-            print("Occupancy grid created successfully.")
+        if self.validate_result_grid():
+            print("------------------------ Result Grid Validation ------------------------")
+            print("Result grid created successfully.")
         else:
-            self.occupancy_grid = None
-            raise ValueError("Occupancy grid validation failed after creation.")
+            self.result_grid = None
+            raise ValueError("Result grid validation failed after creation.")
         
 
-    def visualise_occupancy_grid(self) -> None:
-        if self.occupancy_grid is None:
-            raise ValueError("Occupancy grid is empty, please populate grid first.")
+    def visualise_result_grid(self) -> None:
+        if self.result_grid is None:
+            raise ValueError("Result grid is empty, please populate grid first.")
 
-        print("Occupancy Grid Shape:", self.occupancy_grid.shape)
-        print("Occupied Voxels: ", np.count_nonzero(self.occupancy_grid))
-        print("Ground-Layer voxels: ", np.count_nonzero(self.occupancy_grid[0]))
-        for layer in range(1, self.occupancy_grid.shape[0]):
-            print(f"Layer {layer} voxels: ", np.count_nonzero(self.occupancy_grid[layer]))
+        print("Result Grid Shape:", self.result_grid.shape)
+        print("Occupied Voxels: ", np.count_nonzero(self.result_grid))
+        print("Ground-Layer voxels: ", np.count_nonzero(self.result_grid[0]))
+        for layer in range(1, self.result_grid.shape[0]):
+            print("Layer ", layer, " voxels: ", np.count_nonzero(self.result_grid[layer]))
                 
 model_path = create_path("bottle", 1, "shapenet")
 
@@ -94,6 +94,6 @@ mesh_voxeliser = MeshVoxeliser(
 
 voxel_grid = mesh_voxeliser.start()
 print("Mesh extent [x, y, z]:", mesh_voxeliser.mesh.get_axis_aligned_bounding_box().get_extent())
-occupancy_grid = OccupancyGrid()
-occupancy_grid.create_occupancy_grid(voxel_grid)
-occupancy_grid.visualise_occupancy_grid()
+result_grid = ResultGrid()
+result_grid.create_result_grid(voxel_grid)
+result_grid.visualise_result_grid()

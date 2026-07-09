@@ -15,7 +15,7 @@ def view_model(model_class, model_number, model_dataset) -> None:
     if model_dataset == "model_net":
         model_path = Path("../model_data/model_net_10/" + model_class.lower() + "/" + model_class.lower() + "_" + str(model_number).zfill(4) + ".off")
     elif model_dataset == "shapenet":
-        model_path = Path("../model_data/shape_net_core/" + model_class.lower() + "/" + str(model_number).zfill(4) + "/models/model_normalized.obj")
+        model_path = Path("../model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/model_normalized.obj")
     else:
         raise ValueError(f"Invalid model dataset: {model_dataset}. Must be 'model_net' or 'shapenet'.")
     mesh = o3d.io.read_triangle_mesh(str(model_path))

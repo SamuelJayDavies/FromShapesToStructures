@@ -24,4 +24,6 @@ def view_model(model_class, model_number, model_dataset) -> None:
     o3d.visualization.draw_geometries([mesh])
 
 #view_model("bathtub", 1, "model_net")
-view_model("bottle", 1, "shapenet")
+
+if __name__ == "__name__":
+    view_model("bottle", 1, "shapenet")

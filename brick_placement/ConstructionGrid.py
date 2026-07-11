@@ -92,27 +92,72 @@ class ConstructionGrid:
         else:
             return True
 
+    def validate_is_within_model(self, brick: Brick) -> bool:
+        """ Ensures that every voxel occupied by the brick, is a valid voxel from the original model 
+        (essentially, only place bricks in voxels that need to be occupied)
+        
+        Args:
+            brick: the brick that is being placed
+            
+        Returns:
+            true: if the brick occupies voxels from the original model, otherwise false
+        """
+        y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
+
+        if not self.validate_brick_in_bounds(y, z_start, z_end, x_start, z_end):
+            print("Brick: " + brick.brickType.name + " cannot be placed outside of the bounds of the result grid")
+            return False
+        
+        brick_occupied_result_region = self.result_grid[y, z_start:z_end, x_start:x_end]
+
+        # Get the area that is being currently occupied by the brick and ensure every voxel position is true
+        # essentially ensure the brick is only occupying regions of the model that it needs to
+        # we don't want any part of the brick extending beyond the target region of the model
+        if not np.all(brick_occupied_result_region):
+            print("Brick " + brick.brickType.name + " is occupying a space outside of the models result/target region")
+            return False
+        else:
+            return True
+    
+    def validate_brick_is_connected(self, brick: Brick) -> bool:
+
+        y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
+
+        # No need to check if in bounds, already checked
+
+        if y==0:
+            return True
+        
+        support_region = self.current_grid[y-1, z_start:z_end, x_start:x_end]
+
+        if not np.any(support_region != -1):
+            print("Brick has no lower-level connection and hence is floating")
+            return False
+        else:
+            return True
+
         
     def place_brick(self, brick: Brick) -> None:
 
         if brick.is_placed():
             raise ValueError("Brick has already been placed.")
-        
-        grid_bounds = self.get_grid_region(brick)
-
-        if not self.validate_brick_does_not_conflict(grid_bounds):
-            raise ValueError("Brick cannot be placed as it conflicts with existing bricks.")
+        elif not self.validate_is_within_model(brick):
+            raise ValueError("Brick cannot extend outside of the model's structure")
         else:
-            brick_id = len(self.placed_bricks)
-            brick.place(brick_id)
-            self.placed_bricks.append(brick)
+            grid_bounds = self.get_grid_region(brick)
 
-            # This fills the grid bounds with this particular brick ID
-            grid_bounds[:, :] = brick_id
+            if not self.validate_brick_does_not_conflict(grid_bounds):
+                raise ValueError("Brick cannot be placed as it conflicts with existing bricks.")
+            elif not self.validate_brick_is_connected(brick):
+                raise ValueError("Brick cannot be placed because it is not connected to a brick on a lower-level")
+            else:
+                brick_id = len(self.placed_bricks)
 
-        # !! MASSIVE MISSING POINT HERE IS THAT A BRICK CAN BE PLACED OUTSIDE OF THE TARGET GRID ADD THIS CODE IN LATER
+                # Place the brick in the brick class
+                brick.place_brick(brick_id)
 
+                # Place the brick in the brick array
+                self.placed_bricks.append(brick)
 
-        
-        
-
+                # Place the brick inside the grid_bounds
+                grid_bounds[:, :] = brick_id

@@ -1,6 +1,15 @@
 from .BrickType import BrickType
 
 class Brick:
+    """ Class that represents a brick that can be placed, orientated and has its own coordinates in a Result Grid if it is placed correctly
+     
+    Args:
+        brickType: the type of the brick being placed
+        y: the y-coordinate of the brick being placed
+        z: the z_coordinate of the brick being placed
+        x: the x_coordinate of the brick being placed
+        orientation: the orientation in the form [int, int] of the brick
+    """
     def __init__(self, 
                   brickType: BrickType, y: int, z: int, x: int, orientation: tuple[int, int]) -> None:
         if not isinstance(brickType, BrickType):
@@ -26,15 +35,28 @@ class Brick:
         self.x = x
 
         self.orientation = orientation
+        # Brick ID is only changed to non-None when the brick has been successfully placed, and the method is_placed() will return True
         self.brick_id = None
     
     def size_x(self) -> int:
+        """ Returns the width of the brick
+        
+        Args:
+            Returns the width of the brick"""
         return self.orientation[0]
     
     def size_z(self) -> int:
+        """ Returns the depth of the brick
+        
+        Args:
+            The depth of the brick"""
         return self.orientation[1]
 
     def area(self) -> int:
+        """ Returns the area of the brick
+        
+        Args:
+            The area of the brick"""
         return self.brickType.area()
     
     def position(self) -> tuple[int, int, int]:

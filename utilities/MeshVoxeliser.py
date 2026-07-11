@@ -2,7 +2,7 @@ from pathlib import Path
 import open3d as o3d
 import numpy as np
 
-from MeshValidator import MeshValidator
+from .MeshValidator import MeshValidator
 
 def create_path(model_class, model_number, model_dataset) -> Path:
     """
@@ -22,8 +22,8 @@ class MeshVoxeliser:
     """ Class to voxelise the mesh and create a voxel grid.
 
     Args:
-        model_path -- the path to the model.
-        resolution -- the resolution of the voxel grid.
+        model_path: the path to the model.
+        resolution: the resolution of the voxel grid.
 
     Depreciated:
         This class now no longer supports ModelNet models, as they have different x, y, z axes. Only ShapeNet models are supported.
@@ -118,13 +118,13 @@ class MeshVoxeliser:
 
 #model_path = create_path("chair", 1, "model_net")   
 
+if __name__ == "__name__":
+    model_path = create_path("bottle", 1, "shapenet")
 
-model_path = create_path("bottle", 1, "shapenet")
+    mesh_voxeliser = MeshVoxeliser(
+        model_path=model_path,
+        resolution=16
+    )
 
-mesh_voxeliser = MeshVoxeliser(
-    model_path=model_path,
-    resolution=16
-)
-
-voxel_grid = mesh_voxeliser.start()
-mesh_voxeliser.visualise()
+    voxel_grid = mesh_voxeliser.start()
+    mesh_voxeliser.visualise()

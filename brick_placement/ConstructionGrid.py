@@ -3,7 +3,7 @@ import numpy as np
 from brick import Brick
 
 class ConstructionGrid:
-    def __init__(self, result_grid: np.ndarray) -> None:
+    def __init__(self, result_grid: np.ndarray, minimum_support_ratio: float = 0.5) -> None:
 
         # Validation Checks
         if result_grid.ndim != 3:
@@ -20,6 +20,10 @@ class ConstructionGrid:
         )
 
         self.placed_bricks = []
+
+        # Currently at least half of the bricks below a newly placed brick need to be occupied for a ratio of 0.5
+        # This works as a baseline configuration and no assumed universal physical law so it won't be mentioned like that in the diss
+        self.minimum_support_ratio = minimum_support_ratio
 
     def is_valid_coordinate(self, y: int, z: int, x: int) -> bool:
         if y < 0 or y >= self.result_shape[0]:
@@ -61,6 +65,8 @@ class ConstructionGrid:
 
         return (y, z_start, z_end, x_start, x_end)
     
+    # Different to is a valid coordinate, as you can have a brick placed via coordinates within the bounds of
+    # the construction grid, while its length can make it extend outside of the grid, this is what this method checks
     def validate_brick_in_bounds(self, y: int, z_start: int, z_end: int, x_start: int, x_end: int) -> bool:
         
         size_y, size_z, size_x = self.result_shape
@@ -118,23 +124,60 @@ class ConstructionGrid:
             return False
         else:
             return True
-    
-    def validate_brick_is_connected(self, brick: Brick) -> bool:
+
+    def get_supported_region(self, brick:Brick) -> np.ndarray:
 
         y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
 
+        if not self.validate_brick_in_bounds(y, z_start, z_end, x_start, x_end):
+            print("Brick: " + brick.brickType.name + " cannot be placed outside of the bounds of the result grid")
+            raise ValueError("No support can be provided outside the grid")
+        elif y==0:
+            print("Brick: " + brick.brickType.name + " cannot have support below the bottom of the y-axis or below the ground")
+            raise ValueError("No support can be provided below the ground")
+        else:
+            support_region = self.current_grid[y-1, z_start:z_end, x_start:x_end]
+            return support_region
+
+
+            
+    def validate_brick_is_connected(self, brick: Brick) -> bool:
         # No need to check if in bounds, already checked
 
-        if y==0:
+        if brick.y==0:
             return True
         
-        support_region = self.current_grid[y-1, z_start:z_end, x_start:x_end]
+        support_region = self.get_supported_region(brick)
 
         if not np.any(support_region != -1):
             print("Brick has no lower-level connection and hence is floating")
             return False
         else:
             return True
+    
+    def calculate_support_ratio(self, brick:Brick) -> float:
+        if brick.y == 0:
+            return 1.0
+        else:
+            # This can throw an error here if incorrect could check if more thoroughly later but kinda unnecessary
+            support_region = self.get_supported_region(brick)
+
+            supported_studs = np.count_nonzero(support_region != -1)
+            total_occupied_area = support_region.size
+
+            support_ratio = supported_studs / total_occupied_area
+            return support_ratio
+
+    def validate_minimum_support(self, brick:Brick) -> bool:
+
+        support_ratio = self.calculate_support_ratio(brick)
+
+        if support_ratio < self.minimum_support_ratio:
+            print("Support of brick: " + brick.brickType.name + " is below the threshold of " + str(self.minimum_support_ratio) + " supported studs")
+            return False
+        else:
+            return True
+
 
         
     def place_brick(self, brick: Brick) -> None:
@@ -150,6 +193,8 @@ class ConstructionGrid:
                 raise ValueError("Brick cannot be placed as it conflicts with existing bricks.")
             elif not self.validate_brick_is_connected(brick):
                 raise ValueError("Brick cannot be placed because it is not connected to a brick on a lower-level")
+            elif not self.validate_minimum_support(brick):
+                raise ValueError("Brick does not meet the required threshold of " + str(self.minimum_support_ratio) + " ratio of support studs")
             else:
                 brick_id = len(self.placed_bricks)
 

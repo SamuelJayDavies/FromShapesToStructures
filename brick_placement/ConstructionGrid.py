@@ -67,9 +67,10 @@ class ConstructionGrid:
     
     # Different to is a valid coordinate, as you can have a brick placed via coordinates within the bounds of
     # the construction grid, while its length can make it extend outside of the grid, this is what this method checks
-    def validate_brick_in_bounds(self, y: int, z_start: int, z_end: int, x_start: int, x_end: int) -> bool:
+    def validate_brick_in_bounds(self, brick:Brick) -> bool:
         
         size_y, size_z, size_x = self.result_shape
+        y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
         if y < 0 or y >= size_y:
             print("Y coordinate is not within the bounds of the result grid.")
             return False
@@ -84,7 +85,7 @@ class ConstructionGrid:
     def get_grid_region(self, brick: Brick) -> np.ndarray:
         y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
         
-        if not self.validate_brick_in_bounds(y, z_start, z_end, x_start, x_end):
+        if not self.validate_brick_in_bounds(brick):
             raise ValueError("Brick is being placed outside of the bounds of the result grid.")
         
         else:
@@ -110,7 +111,7 @@ class ConstructionGrid:
         """
         y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
 
-        if not self.validate_brick_in_bounds(y, z_start, z_end, x_start, z_end):
+        if not self.validate_brick_in_bounds(brick):
             print("Brick: " + brick.brickType.name + " cannot be placed outside of the bounds of the result grid")
             return False
         
@@ -129,7 +130,7 @@ class ConstructionGrid:
 
         y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
 
-        if not self.validate_brick_in_bounds(y, z_start, z_end, x_start, x_end):
+        if not self.validate_brick_in_bounds(brick):
             print("Brick: " + brick.brickType.name + " cannot be placed outside of the bounds of the result grid")
             raise ValueError("No support can be provided outside the grid")
         elif y==0:
@@ -177,9 +178,55 @@ class ConstructionGrid:
             return False
         else:
             return True
-
-
         
+    def can_place_brick(self, brick: Brick) -> bool:
+        # Obviously this method can be done shorter, but i prefer to see each condition that is being checked explicity
+        grid_bounds = self.get_grid_region(brick)
+
+        # 1. Has the brick already been placed 
+        if brick.is_placed():
+            print("The brick has already been placed")
+            return False
+        # 2. Is the brick in the bounds of the construction grid
+        elif not self.validate_brick_in_bounds(brick):
+            return False
+        # 3. The brick is being placed within an occupied voxel of the result grid (it is matching the model visually)
+        elif not self.validate_is_within_model(brick):
+            return False
+        # 4. The brick doesn't occupy the same area as an existing brick
+        elif not self.validate_brick_does_not_conflict(grid_bounds):
+            return False
+        # 5. The brick is connected to the ground or a block on a lower level of the y-axis 
+        elif not self.validate_brick_is_connected(brick):
+            return False
+        # 6. The brick has the minimum required level of support to remain stable
+        elif not self.validate_minimum_support(brick):
+            return False
+        
+        else:
+            return True
+
+    def place_brick(self, brick:Brick) -> None:
+        if not self.can_place_brick(brick):
+            raise ValueError("Brick placement failed a placement constraint, refer to the above diagnostic information")
+        else:
+            grid_bounds = self.get_grid_region(brick)
+
+            brick_id = len(self.placed_bricks)
+
+            # Place the brick in the brick class
+            brick.place_brick(brick_id)
+
+            # Place the brick in the brick array
+            self.placed_bricks.append(brick)
+
+            # Place the brick inside the grid_bounds
+            grid_bounds[:, :] = brick_id
+        
+        
+
+
+    """  
     def place_brick(self, brick: Brick) -> None:
 
         if brick.is_placed():
@@ -206,3 +253,4 @@ class ConstructionGrid:
 
                 # Place the brick inside the grid_bounds
                 grid_bounds[:, :] = brick_id
+    """

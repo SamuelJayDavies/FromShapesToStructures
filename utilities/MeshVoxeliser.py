@@ -9,9 +9,9 @@ def create_path(model_class, model_number, model_dataset) -> Path:
     Create the path to the model based on the model class, model number, and dataset.
     """
     if model_dataset == "model_net":
-        return Path("../model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
+        return Path("model_data/model_net_10/" + model_class + "/" + model_class + "_" + str(model_number).zfill(4) + ".off")
     elif model_dataset == "shapenet":
-        return Path("../model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/model_normalized.obj")
+        return Path("model_data/shape_net_core/" + model_class + "/" + str(model_number).zfill(4) + "/model_normalized.obj")
     else:
         raise ValueError(f"Invalid model dataset: {model_dataset}. Must be 'model_net' or 'shapenet'.")
 
@@ -118,7 +118,7 @@ class MeshVoxeliser:
 
 #model_path = create_path("chair", 1, "model_net")   
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     model_path = create_path("bottle", 1, "shapenet")
 
     mesh_voxeliser = MeshVoxeliser(

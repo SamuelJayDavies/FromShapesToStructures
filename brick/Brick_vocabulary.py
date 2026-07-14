@@ -57,16 +57,11 @@ class Brick_vocabulary:
         
         # End of Validation Checks #
         print("Brick vocab succesfully saved")
-        self.bricks = bricks
+        self._bricks = bricks
 
-    def bricks(self) -> List[BrickType]:
-        """
-        Get the list of bricks in the vocabulary.
-        
-        Returns:
-            A list of BrickType instances in the vocabulary.
-        """
-        return self.bricks
+    def bricks(self) -> list[BrickType]:
+
+        return list(self._bricks)
     
     def __len__(self) -> int:
         """
@@ -75,7 +70,7 @@ class Brick_vocabulary:
         Returns:
             The number of bricks in the vocabulary.
         """
-        return len(self.bricks)
+        return len(self._bricks)
     
     def __getitem__(self, index: int) -> BrickType:
         """
@@ -87,7 +82,7 @@ class Brick_vocabulary:
         Returns:
             The brick instance at the specified index.
         """
-        return self.bricks[index]
+        return self._bricks[index]
     
     def __iter__(self):
         """
@@ -96,7 +91,7 @@ class Brick_vocabulary:
         Returns:
             An iterator over the bricks in the vocabulary.
         """
-        return iter(self.bricks)
+        return iter(self._bricks)
     
     def __repr__(self) -> str:
         """
@@ -105,7 +100,27 @@ class Brick_vocabulary:
         Returns:
             A string representation of the brick vocabulary.
         """
-        return "Brick Vocabulary: " + ", ".join([brick.name for brick in self.bricks])
+        return "Brick Vocabulary: " + ", ".join([brick.name for brick in self._bricks])
+
+    def group_by_area_size(self) -> list[tuple[int, list[BrickType]]]:
+        groups: dict[int, list[BrickType]] = {}
+
+        for brick in self._bricks:
+            brick_area = brick.area()
+
+            if brick_area not in groups:
+                groups[brick_area] = []
+
+            groups[brick_area].append(brick)
+        
+        sorted_areas = sorted(groups.keys(), reverse=True)
+
+        grouped_bricks = list[tuple[int, list[BrickType]]] = []
+
+        for area in sorted_areas:
+            grouped_bricks.append((area, list(groups[area])))
+
+        return grouped_bricks
 
 BASIC_BRICK_VOCABULARY = Brick_vocabulary(
     bricks=[

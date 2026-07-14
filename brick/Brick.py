@@ -25,6 +25,12 @@ class Brick:
             if param < 0:
                 raise ValueError(param + " must be a non-negative integer.")
 
+        if len(orientation) != 2:
+            raise ValueError("Orientation must contain 2 dimensions exactly")
+        
+        if not all(isinstance(dimension, int) for dimension in orientation):
+            raise ValueError("Orientaton dimensions must be integers")
+
         if orientation not in brickType.orientations():
             raise ValueError("The provided orientation " + str(orientation) + " cannot be used with this brick type + " + str(brickType) + ".")
         

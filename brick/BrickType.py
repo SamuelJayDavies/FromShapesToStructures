@@ -8,11 +8,11 @@ class BrickType:
         else:
             dimensions = {"Width": x_length, "Depth": z_length}
 
-            for name, var in dimensions.items():
+            for brick_name, var in dimensions.items():
                 if not isinstance(var, int):
-                    raise TypeError(name + " must be an integer value")
+                    raise TypeError(brick_name + " must be an integer value")
                 elif var < 1:
-                    raise ValueError(name + " must be at least 1")
+                    raise ValueError(brick_name + " must be at least 1")
                 else:
                     self.name = name
                     self.x_length = x_length

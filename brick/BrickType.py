@@ -24,13 +24,13 @@ class BrickType:
     def dimensions(self) -> tuple[int, int]:
         return self.x_length, self.z_length
     
-    def orientations(self) -> tuple[tuple[int, int]]:
+    def orientations(self) -> list[tuple[int, int]]:
         original_orientation = (self.x_length, self.z_length)
         rotated_orientation = (self.z_length, self.x_length)
         if original_orientation == rotated_orientation:
-            return (original_orientation)
+            return [original_orientation]
         else:
-            return (original_orientation, rotated_orientation)
+            return [original_orientation, rotated_orientation]
 
     # repr over __str__ because if __str__ isn't defined, __repr__ is used instead. 
     def __repr__(self) -> str:

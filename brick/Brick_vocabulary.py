@@ -115,7 +115,7 @@ class Brick_vocabulary:
         
         sorted_areas = sorted(groups.keys(), reverse=True)
 
-        grouped_bricks = list[tuple[int, list[BrickType]]] = []
+        grouped_bricks: list[tuple[int, list[BrickType]]] = []
 
         for area in sorted_areas:
             grouped_bricks.append((area, list(groups[area])))
@@ -157,6 +157,3 @@ ADVANCED_BRICK_VOCABULARY = Brick_vocabulary(
         BrickType(name="8x8", x_length=8, z_length=8)
     ]
 )
-
-print("Basic Brick Vocabulary: ", BASIC_BRICK_VOCABULARY)
-print("Advanced Brick Vocabulary: ", ADVANCED_BRICK_VOCABULARY)

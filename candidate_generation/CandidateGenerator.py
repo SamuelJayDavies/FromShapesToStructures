@@ -6,16 +6,22 @@ from brick.Brick_vocabulary import Brick_vocabulary
 
 from brick_placement.ConstructionGrid import ConstructionGrid
 
+from .CandidateGenerationStrategy import CandidateGenerationStrategy
+
 class CandidateGenerator:
 
     # we will deem an available grid as the result_grid - occupied_grid (construction_grid)
 
-    def __init__(self, brick_vocabulary: Brick_vocabulary) -> None:
+    def __init__(self, brick_vocabulary: Brick_vocabulary, search_strategy: CandidateGenerationStrategy = CandidateGenerationStrategy.BASIC) -> None:
 
         if not isinstance(brick_vocabulary, Brick_vocabulary):
             raise TypeError("Brick vocabulary must be of type Brick_vocabulary")
         
+        if not isinstance(search_strategy, CandidateGenerationStrategy):
+            raise TypeError("The search strategy needs to be an Enum CandidateGenerationStrategy")
+        
         self.brick_vocabulary = brick_vocabulary
+        self.search_strategy = search_strategy
 
     def _validate_free_grid(self, free_grid: np.ndarray) -> bool:
         
@@ -169,16 +175,33 @@ class CandidateGenerator:
             
         return candidates
 
-    def genereate_all_candidates(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int]) -> list[Brick]:
-
+    def generate_candidates(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int]) -> list[Brick]:
+        """ Now works with both basic search and informed search"""
         candidates: list[Brick] = []
 
-        for brick_type in self.brick_vocabulary:
+        brick_types = self._get_brick_types_from_search_strategy()
+
+        for brick_type in brick_types:
             brick_type_candidates = self.generate_candidates_for_singular_brick_type(free_grid, crucial_point, brick_type)
 
-            candidates.append(brick_type_candidates)
+            candidates.extend(brick_type_candidates)
 
         return candidates
+
+    def _get_brick_types_from_search_strategy(self) -> list[BrickType]:
+
+        if self.search_strategy == CandidateGenerationStrategy.BASIC:
+            return self.brick_vocabulary.bricks()
+        else:
+            ordered_by_brick_size: list[BrickType] = []
+
+            area_groups = self.brick_vocabulary.group_by_area_size()
+
+            # We don't need the area here really
+            for _, brick_types in area_groups:
+                ordered_by_brick_size.extend(brick_types)
+
+            return ordered_by_brick_size
 
 
 

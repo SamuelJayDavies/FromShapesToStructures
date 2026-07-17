@@ -140,8 +140,6 @@ class ConstructionGrid:
             support_region = self.current_grid[y-1, z_start:z_end, x_start:x_end]
             return support_region
 
-
-            
     def validate_brick_is_connected(self, brick: Brick) -> bool:
         # No need to check if in bounds, already checked
 
@@ -178,6 +176,95 @@ class ConstructionGrid:
             return False
         else:
             return True
+        
+    def get_support_bricks(self, brick: Brick) -> set[int]:
+        """ Utility method to be used in-junction with connectivity score by identifying how many different bricks are being supported below a candidate brick placement """
+        if brick.y == 0:
+            return set()
+        else:
+            support_region = self.get_supported_region(brick)
+
+            support_brick_ids = support_region[support_region != -1]
+
+            num_of_support_bricks = set()
+            for brick_id in np.unique(support_brick_ids):
+                num_of_support_bricks.add(int(brick_id))
+
+            return num_of_support_bricks
+        
+    def get_uncovered_layer(self, y: int) -> np.ndarray:
+        """ Compares against the result layer and the current occupied current grid to return what positions need to be covered and which are currently uncovered
+        
+        Args:
+            y: the y-coordinate of the layer that is being returned
+            
+        Returns;
+            An array with the same shape as the current_grid with True positions needing to be filled, and the False positions not needing to be filled or already occupied"""
+        if y < 0 or y >= self.result_shape[0]:
+            raise TypeError("Layer coordinate y is outside of the construction grid")
+        
+        result_layer = self.result_grid[y]
+        # Will make empty positions be False and occupied positions True
+        current_layer = self.current_grid[y] != -1
+
+        # A bit of fancy code that reverses the Boolean current-layer mask, so occupied becomes False and Empty becomes True
+        # This is needed because current_layer has empty positions currently as False
+        return result_layer & ~current_layer
+    
+    def get_uncovered_layer_after_candidate(self, candidate: Brick) -> np.ndarray:
+        """ Returns a particular z and x layer showing which coordinates are still empty after a candidate placement"""
+        if not self.validate_brick_in_bounds(candidate):
+            raise ValueError("Candidate cannot be placed outside of the result grid")
+        else:
+            uncovered_layer = self.get_uncovered_layer(candidate.y).copy()
+
+            _, z_start, z_end, x_start, x_end = self.get_brick_bounds(candidate)
+
+            # This array is a 2D array because the result of .get_uncovered_layer already had the y-axis
+            # This will replace the bricks bounds with False in the uncovered_layer as they no longer need to be filled
+            # This is the only conclusion because the method beforehand would've eliminated positions that were not part of the original result layer (explemplar model)
+            uncovered_layer[z_start:z_end, x_start:x_end] = False
+
+            return uncovered_layer
+
+    def get_alone_coordinates(self, uncovered_layer: np.ndarray) -> set[tuple[int, int]]:
+        """ Identifies coordinates within an uncovered_layer that are isolated and don't have any empty neighbours or partners, a crucial aspect in scoring awkward placements
+        
+        Args:
+            uncovered_layer: a 2-dimension layer from a singular y-plane that has True values as unoccupied positions needing a brick and False as already occupied or outside of the exemplar model
+            
+        Returns:
+            A set of z,x coordinates that point to singular gaps within an uncovered_layer"""
+        if uncovered_layer.ndim != 2:
+            raise ValueError("Uncovered layer needs to come from an individual y-layer and should be 2-dimensional")
+        else:
+            # An array of coordinates that point to akwkward gaps in the structure
+            gap_coordinates: set[tuple[int, int]] = ()
+
+            neighbour_shifts = (-1, 0), (1,0), (0,-1), (0,1)
+
+            layer_size_z, layer_size_x = uncovered_layer.shape
+
+            # Only check coordinates where the cell may be alone (empty and alone)
+            for z, x in np.argwhere(uncovered_layer):
+                has_empty_neighbour = False
+
+                for z_shift, x_shift in neighbour_shifts:
+                    neighbour_z = z + z_shift
+                    neighbour_x = x + x_shift
+
+                    if (0 <= neighbour_z < layer_size_z) and (0 <= neighbour_x < layer_size_x) and uncovered_layer[neighbour_z, neighbour_x]: # If the position needs to be filled
+                        has_empty_neighbour = True
+                        break
+                # We have already checked cooridnates that are empty, so if we don't find a neighbour that is also empty, this is a singular alone coordinate
+                # If they have a neighbour they aren't a problem
+                if not has_empty_neighbour:
+                    gap_coordinates.add((neighbour_z, neighbour_x))
+            
+            return gap_coordinates
+                    
+
+
         
     def can_place_brick(self, brick: Brick) -> bool:
         # Obviously this method can be done shorter, but i prefer to see each condition that is being checked explicity

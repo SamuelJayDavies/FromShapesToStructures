@@ -7,7 +7,7 @@ from brick_placement import ConstructionGrid
 
 class CandidateScorer:
 
-    BRICK_EFFICENCY_WEIGHT: float = 0.30
+    BRICK_EFFICIENCY_WEIGHT: float = 0.30
     SUPPORT_WEIGHT: float = 0.40
     CONNECTIVITY_WEIGHT: float = 0.20
     GAP_AVOIDANCE_WEIGHT: float = 0.10
@@ -19,13 +19,12 @@ class CandidateScorer:
     MAXIMUM_SCORE: float = 1.0
 
     def __init__(self) -> None:
-        self.brick_efficiency_weight = self.BRICK_EFFICENCY_WEIGHT
+        self.brick_efficiency_weight = self.BRICK_EFFICIENCY_WEIGHT
         self.support_weight = self.SUPPORT_WEIGHT
         self.connectivity_weight = self.CONNECTIVITY_WEIGHT
         self.gap_avoidance_weight = self.GAP_AVOIDANCE_WEIGHT
 
     def _validate_score_component(self, name: str, value: float) -> bool:
-
         if not isinstance(value, Real):
             print("Value of the score component is of the wrong type needs to be float")
             return False
@@ -38,7 +37,7 @@ class CandidateScorer:
     def calculate_maximum_candidate_area(self, candidates: list[Brick]):
         return max(candidate.area() for candidate in candidates)
         
-    def calculate_brick_efficency_score(self, candidate: Brick, maximum_candidate_area: int) -> float:
+    def calculate_brick_efficiency_score(self, candidate: Brick, maximum_candidate_area: int) -> float:
         if not isinstance(maximum_candidate_area, int):
             raise TypeError("Maximum candidate area needs to be a integer")
         elif maximum_candidate_area < 1:
@@ -83,10 +82,10 @@ class CandidateScorer:
         # MENTION IN REPORT THE DOWNSIDES OF THIS METHOD, WHICH CAN BE FOUND IN CHAPTER 9
 
 
-    def calculate_total_score(self, brick_efficency_score: float, brick_support_score: float, brick_connectivity_score: float, brick_gap_penalty: float) -> float:
+    def calculate_total_score(self, brick_efficiency_score: float, brick_support_score: float, brick_connectivity_score: float, brick_gap_penalty: float) -> float:
         # This classes scores are in relation to the brick placement and not the weights
 
-        score_components = {"brick_efficiency_score": brick_efficency_score, "support_score": brick_support_score, "connectivity_score": brick_connectivity_score, "gap_penalty": brick_gap_penalty}
+        score_components = {"brick_efficiency_score": brick_efficiency_score, "support_score": brick_support_score, "connectivity_score": brick_connectivity_score, "gap_penalty": brick_gap_penalty}
 
         for name, value in score_components.items():
             if not (self._validate_score_component(name, value)):
@@ -94,7 +93,7 @@ class CandidateScorer:
         
         gap_avoidance_score = 1.0 - float(brick_gap_penalty)
 
-        total_score = (self.brick_efficiency_weight * float(brick_efficency_score)
+        total_score = (self.brick_efficiency_weight * float(brick_efficiency_score)
                      + self.support_weight * float(brick_support_score)
                      + self.connectivity_weight * float(brick_connectivity_score)
                      + self.gap_avoidance_weight * float(gap_avoidance_score))
@@ -103,7 +102,7 @@ class CandidateScorer:
         return min(max(total_score, 0.0), self.MAXIMUM_SCORE)
     
     def create_candidate_score(self, candidate: Brick, construction_grid: ConstructionGrid, maximum_candidate_area: int) -> CandidateScore:
-        brick_e_score = self.calculate_brick_efficency_score(candidate, maximum_candidate_area)
+        brick_e_score = self.calculate_brick_efficiency_score(candidate, maximum_candidate_area)
         brick_s_score = self.calculate_support_score(candidate, construction_grid)
         brick_c_score = self.calculate_connectivity_score(candidate, construction_grid)
         brick_g_penalty = self.calculate_gap_penalty(candidate, construction_grid)

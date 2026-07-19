@@ -45,7 +45,7 @@ class CandidateGenerator:
     # Whereas False meant the voxel was empty or outside the target shape
     # This same rule is applied here, as either, False means it has already been covered by a birck, or is outside the target position, while True means it is ready for placement
     def find_next_crucial_point(self, free_grid: np.ndarray) -> tuple[int, int, int] | None:
-        if(not self._validate_free_grid):
+        if(not self._validate_free_grid(free_grid)):
             raise ValueError("Free grid failed validation, look above for debugging reason")
         else:
             size_y, size_z, size_x = free_grid.shape

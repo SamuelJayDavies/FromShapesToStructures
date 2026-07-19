@@ -61,8 +61,8 @@ class CandidateScorer:
         uncovered_before = construction_grid.get_uncovered_layer(candidate.y)
         uncovered_after = construction_grid.get_uncovered_layer_after_candidate(candidate)
 
-        alone_before = construction_grid.get_alone_coordinates(uncovered_before)
-        alone_after = construction_grid.get_alone_coordinates(uncovered_after)
+        alone_before = set(construction_grid.get_alone_coordinates(uncovered_before))
+        alone_after = set(construction_grid.get_alone_coordinates(uncovered_after))
 
         # We need to distinguish between what new alone coordinates were introduced after this coordinate was considered
         # Alternatively, if an isolated coordinate already existed, punishing the new placement for this doesn't help distinguish between candidates
@@ -131,7 +131,7 @@ class CandidateScorer:
 
             for candidate in candidates:
                 candidate_score = self.create_candidate_score(candidate, construction_grid, maximum_candidate_area)
-                current_scored_candidates.append(candidate, candidate_score)
+                current_scored_candidates.append([candidate, candidate_score])
 
             return current_scored_candidates
 

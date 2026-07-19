@@ -1,7 +1,7 @@
 import numpy as np
 
 from brick.Brick_vocabulary import BASIC_BRICK_VOCABULARY
-from candidate_generation.CandidateGenerator import CandidateGenerator
+from brick_generation.CandidateGenerator import CandidateGenerator
 
 # Ensuring that it does through all lower level until the y-axis
 

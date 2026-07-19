@@ -56,7 +56,7 @@ class Brick_vocabulary:
             raise ValueError("Vocabulary must contain a 1x1 brick.")
         
         # End of Validation Checks #
-        print("Brick vocab succesfully saved")
+        #print("Brick vocab succesfully saved")
         self._bricks = bricks
 
     def bricks(self) -> list[BrickType]:

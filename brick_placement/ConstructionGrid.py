@@ -239,7 +239,7 @@ class ConstructionGrid:
             raise ValueError("Uncovered layer needs to come from an individual y-layer and should be 2-dimensional")
         else:
             # An array of coordinates that point to akwkward gaps in the structure
-            gap_coordinates: set[tuple[int, int]] = ()
+            gap_coordinates: set[tuple[int, int]] = set()
 
             neighbour_shifts = (-1, 0), (1,0), (0,-1), (0,1)
 
@@ -259,7 +259,7 @@ class ConstructionGrid:
                 # We have already checked cooridnates that are empty, so if we don't find a neighbour that is also empty, this is a singular alone coordinate
                 # If they have a neighbour they aren't a problem
                 if not has_empty_neighbour:
-                    gap_coordinates.add((neighbour_z, neighbour_x))
+                    gap_coordinates.add((z,x))
             
             return gap_coordinates
                     

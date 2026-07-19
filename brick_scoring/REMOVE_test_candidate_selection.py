@@ -3,8 +3,8 @@ from typing import Callable
 from brick import Brick
 from brick import BrickType
 
-from candidate_scoring import CandidateScore
-from candidate_scoring import CandidateSelector
+from brick_scoring import CandidateScore
+from brick_scoring import CandidateSelector
 
 
 BRICK_EFFICIENCY_WEIGHT: float = 0.30

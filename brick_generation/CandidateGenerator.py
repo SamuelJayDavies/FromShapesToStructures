@@ -157,7 +157,7 @@ class CandidateGenerator:
                             candidate_origins.append((crucial_y, candidate_z, candidate_x))
             return candidate_origins
         
-    def generate_candidates_for_singular_brick_type(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int], brick_type: BrickType) -> list[Brick]:
+    def generate_candidates_for_singular_brick_type(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int], brick_type: BrickType, construction_grid: ConstructionGrid) -> list[Brick]:
 
         candidates: list[Brick] = []
 
@@ -171,18 +171,21 @@ class CandidateGenerator:
 
                 candidate = Brick(brick_type, candidate_origin[0], candidate_origin[1], candidate_origin[2], orientation)
 
+                if not construction_grid.can_place_brick(candidate):
+                    continue
+                
                 candidates.append(candidate)
             
         return candidates
 
-    def generate_candidates(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int]) -> list[Brick]:
+    def generate_candidates(self, free_grid: np.ndarray, crucial_point: tuple[int, int, int], construction_grid: ConstructionGrid) -> list[Brick]:
         """ Now works with both basic search and informed search"""
         candidates: list[Brick] = []
 
         brick_types = self._get_brick_types_from_search_strategy()
 
         for brick_type in brick_types:
-            brick_type_candidates = self.generate_candidates_for_singular_brick_type(free_grid, crucial_point, brick_type)
+            brick_type_candidates = self.generate_candidates_for_singular_brick_type(free_grid, crucial_point, brick_type, construction_grid)
 
             candidates.extend(brick_type_candidates)
 

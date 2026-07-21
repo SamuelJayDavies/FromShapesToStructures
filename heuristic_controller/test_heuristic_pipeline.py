@@ -142,4 +142,179 @@ class TestHeuristicPipelineValidation(unittest.TestCase):
             ]
         )
         
-    
+    def test_binary_to_boolean_is_correct(self) -> None:
+        integer_result_grid = np.array(
+            [
+                [
+                    [1, 1, 0],
+                    [1, 0, 0],
+                ],
+                [
+                    [1, 0, 0],
+                    [1, 0, 0],
+                ]
+            ],
+            dtype=np.int32
+        )
+        
+        expected_boolean_grid = np.array(
+            [
+                [
+                    [True, True, False],
+                    [True, False, False],
+                ],
+                [
+                    [True, False, False],
+                    [True, False, False]
+                ]
+            ],
+            dtype=bool
+        )
+        
+        pipeline = HeuristicPipeline(integer_result_grid, self.brick_vocabulary, CandidateGenerationStrategy.CandidateGenerationStrategy.BASIC)
+        
+        self.assertEqual(pipeline.result_grid.dtype, np.dtype(bool))
+        
+        np.testing.assert_array_equal(pipeline.result_grid, expected_boolean_grid)
+        
+        self.assertIs(pipeline.result_grid, pipeline.construction_grid.result_grid)
+        
+    def test_incorrect_dimensional_grid_is_rejected(self) -> None:
+        
+        invalid_result_grid = np.array(
+            [
+                [True, True, False],
+                [True, False, False],
+            ],
+            dtype=bool,
+        )
+        
+        with self.assertRaises(ValueError):
+            HeuristicPipeline(invalid_result_grid, self.brick_vocabulary, CandidateGenerationStrategy.CandidateGenerationStrategy.BASIC)
+            
+    def test_grid_with_zero_axis_is_rejected(self) -> None:
+        
+        invalid_result_grid = np.empty(shape=(2, 0, 3), dtype=bool)
+        
+        with self.assertRaises(ValueError):
+            HeuristicPipeline(invalid_result_grid, self.brick_vocabulary, CandidateGenerationStrategy.CandidateGenerationStrategy.BASIC)
+            
+    def test_non_binary_numeric_grid_is_rejected(self) -> None:
+        invalid_result_grid = np.array(
+            [
+                [
+                    [1, 0, 2],
+                    [1, 0, 0],
+                ]
+            ],
+            dtype=np.int32,
+        )
+
+        with self.assertRaises(ValueError):
+            HeuristicPipeline(
+                invalid_result_grid,
+                self.brick_vocabulary,
+                CandidateGenerationStrategy.CandidateGenerationStrategy.BASIC,
+            )
+
+class TestHeuristicPipelineOutcomes(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.brick_vocabulary = Brick_vocabulary(
+            [
+                BrickType("1x1", 1, 1),
+                BrickType("1x2", 1, 2),
+                BrickType("2x2", 2, 2),
+            ]
+        )
+
+        self.generation_strategies = (
+            CandidateGenerationStrategy.CandidateGenerationStrategy.BASIC,
+            CandidateGenerationStrategy.CandidateGenerationStrategy.INFORMED,
+        )
+        
+    def test_empty_result_is_immediately_finished(self) -> None:
+        empty_result_grid = np.zeros(
+        shape=(2, 2, 3),
+        dtype=bool,
+    )
+
+        for strategy in self.generation_strategies:
+            with self.subTest(strategy=strategy):
+                pipeline = HeuristicPipeline(
+                    empty_result_grid,
+                    self.brick_vocabulary,
+                    strategy,
+                )
+
+                finished_structure = pipeline.create_structure()
+
+                self.assertEqual(
+                    finished_structure.final_status,
+                    PlacementResult.STATUS_COMPLETE,
+                )
+
+                self.assertEqual(
+                    len(finished_structure.placed_bricks),
+                    0,
+                )
+
+                self.assertEqual(
+                    len(finished_structure.placement_history),
+                    1,
+                )
+
+                self.assertEqual(
+                    finished_structure
+                    .placement_history[-1]
+                    .status,
+                    PlacementResult.STATUS_COMPLETE,
+                )
+
+                self.assertTrue(
+                    np.all(
+                        finished_structure.finished_grid == -1
+                    )
+                )
+                
+    def test_unsupported_target_returns_no_valid_candidates(self) -> None:
+        unsupported_result_grid = np.array(
+            [
+                [
+                    [True, False],
+                ],
+                [
+                    [False, True],
+                ],
+            ],
+            dtype=bool,
+        )
+
+        expected_blocking_point = (1, 0, 1)
+
+        for strategy in self.generation_strategies:
+            with self.subTest(strategy=strategy):
+                pipeline = HeuristicPipeline(
+                    unsupported_result_grid,
+                    self.brick_vocabulary,
+                    strategy,
+                )
+
+                finished_structure = pipeline.create_structure()
+
+                self.assertEqual(
+                    finished_structure.final_status,
+                    PlacementResult.STATUS_NO_VALID_CANDIDATES,
+                )
+
+                self.assertEqual(
+                    finished_structure
+                    .placement_history[-1]
+                    .status,
+                    PlacementResult.STATUS_NO_VALID_CANDIDATES,
+                )
+
+                self.assertEqual(
+                    len(finished_structure.placed_bricks),
+                    1,
+                )

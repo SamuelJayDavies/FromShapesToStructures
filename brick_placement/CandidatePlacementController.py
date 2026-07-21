@@ -53,7 +53,7 @@ class CandidatePlacementController:
         if crucial_point is None:
             return PlacementResult(None, None, None, 0, PlacementResult.STATUS_COMPLETE)
         
-        candidates = self.candidate_generator.generate_candidates(free_grid, crucial_point)
+        candidates = self.candidate_generator.generate_candidates(free_grid, crucial_point, self.construction_grid)
         
         if not candidates:
             return PlacementResult(crucial_point, None, None, 0, PlacementResult.STATUS_NO_VALID_CANDIDATES)

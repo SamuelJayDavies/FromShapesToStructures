@@ -34,7 +34,7 @@ class HeuristicPipeline:
         if not isinstance(result_grid, np.ndarray):
             raise TypeError("result_grid needs to be of type numpy array")
         
-        if result_grid.ndim != 3 and any(dimension_size == 0 for dimension_size in result_grid.shape):
+        if result_grid.ndim != 3 or any(dimension_size == 0 for dimension_size in result_grid.shape):
             raise ValueError("Result_grid must be 3-dimensional and have a non-zero size in every dimension [y,z, x]")
         
         if np.issubdtype(result_grid.dtype, np.bool_):

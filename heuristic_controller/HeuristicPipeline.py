@@ -2,7 +2,7 @@ import numpy as np
 
 from brick import Brick_vocabulary
 from brick_generation import CandidateGenerationStrategy
-from brick_generation import CandidateGenerator
+from brick_generation.CandidateGenerator import CandidateGenerator
 from brick_placement import ConstructionGrid
 
 from brick_scoring import CandidateScorer

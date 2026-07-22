@@ -1,7 +1,7 @@
-from brick_placement import ConstructionGrid
-from brick_generation import CandidateGenerator
-from brick_scoring import CandidateScorer
-from brick_scoring import CandidateSelector
+from .ConstructionGrid import ConstructionGrid
+from brick_generation.CandidateGenerator import CandidateGenerator
+from brick_scoring.CandidateScorer import CandidateScorer
+from brick_scoring.CandidateSelector import CandidateSelector
 
 from .PlacementResult import PlacementResult
 

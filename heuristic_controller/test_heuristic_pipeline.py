@@ -290,8 +290,6 @@ class TestHeuristicPipelineOutcomes(unittest.TestCase):
             dtype=bool,
         )
 
-        expected_blocking_point = (1, 0, 1)
-
         for strategy in self.generation_strategies:
             with self.subTest(strategy=strategy):
                 pipeline = HeuristicPipeline(

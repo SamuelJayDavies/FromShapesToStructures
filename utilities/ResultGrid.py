@@ -41,7 +41,7 @@ class ResultGrid:
         Creates the result grid in numpy from the inputted voxel grid from the MeshVoxeliser class
 
         Args:
-            voxel_grid: a voxelised 3D data structure that represents the object to be built
+            voxel_grid: a voxelised 3D data structure that represents the object to be built (o3d.geometry.VoxelGrid)
 
         Returns:
             None

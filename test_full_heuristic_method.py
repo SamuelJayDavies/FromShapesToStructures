@@ -25,7 +25,7 @@ MODEL_CLASS: str = "bottle"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 16
+RESOLUTION: int = 32
 
 MINIMUM_SUPPORT_RATIO = 0.5
 # Sofas need a support ratio of 0.25
@@ -133,19 +133,51 @@ def main(minimum_support_ratio: float) -> None:
     if (basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES and informed_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES):
         minimum_support_ratio -= 0.05
         if (minimum_support_ratio >= 0):
-            main(minimum_support_ratio)
+            return main(minimum_support_ratio) # CHANGE THIS FROM RETURN TO JUST MAIN(minimum_SUPPORT_RATIO) to GET THE EXAMPLE WITH TEH SOFA HAVING A GAP IN THE MIDDLE
         else:
             print("Runtime Has Concluded!")
-            
+    
+    # Stage 5 - specific checking for bottle at resolution 32
+    print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
+                
     # Stage 4
     visualise_results(basic_finished_structure.finished_grid)
     
     #visualise_results(informed_finished_structure.finished_grid)
+
             
 def visualise_results(finished_grid: np.ndarray) -> None:
     visualiser = BrickConstructionVisualiser(finished_grid)
     
     visualiser.visualise_complete_model()
     
+# Stage 5 - checking why models failed
+def print_blocked_layer_diagnostics(
+    finished_structure: HeuristicResult
+) -> None:
+
+    blocked_y, _, _ = (finished_structure.placement_history[-1].crucial_point)
+
+    target_layer = finished_structure.result_grid[blocked_y]
+
+    occupied_layer = (finished_structure.finished_grid[blocked_y] != -1)
+
+    support_layer = (finished_structure.finished_grid[blocked_y - 1] != -1)
+
+    uncovered_layer = (target_layer & ~occupied_layer)
+
+    print("\nTarget layer:")
+    print(target_layer.astype(int))
+
+    print("\nOccupied construction layer:")
+    print(occupied_layer.astype(int))
+
+    print("\nUncovered target cells:")
+    print(uncovered_layer.astype(int))
+
+    print("\nConstructed support layer:")
+    print(support_layer.astype(int))
+    
 if __name__ == "__main__":
     main(MINIMUM_SUPPORT_RATIO)
+    

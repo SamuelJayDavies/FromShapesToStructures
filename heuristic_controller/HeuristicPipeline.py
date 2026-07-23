@@ -17,12 +17,12 @@ from .HeuristicResult import HeuristicResult
 
 class HeuristicPipeline:
     
-    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy) -> None:
+    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy, minimum_support_ratio: float) -> None:
         prepared_result_grid = self._validate_result_grid(result_grid)
         self.brick_vocabulary = brick_vocabulary
         self.generation_strategy = generation_strategy
-        
-        self.construction_grid = ConstructionGrid(prepared_result_grid)
+            
+        self.construction_grid = ConstructionGrid(prepared_result_grid, minimum_support_ratio=minimum_support_ratio)
         
         # Neeed to make sure the copied version is being used here
         self.result_grid = self.construction_grid.result_grid

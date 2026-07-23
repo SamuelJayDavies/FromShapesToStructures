@@ -119,7 +119,7 @@ class MeshVoxeliser:
 #model_path = create_path("chair", 1, "model_net")
 
 if __name__ == "__main__":
-    model_path = create_path("sofa", 1, "shapenet")
+    model_path = create_path("bottle", 1, "shapenet")
 
     mesh_voxeliser = MeshVoxeliser(
         model_path=model_path,

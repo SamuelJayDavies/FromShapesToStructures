@@ -18,7 +18,10 @@ from heuristic_controller.HeuristicResult import HeuristicResult
 # Stage 3 comparing original to result
 from brick_placement.PlacementResult import PlacementResult
 
-MODEL_CLASS: str = "sofa"
+# Stage 4 Visualising the final result
+from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
+
+MODEL_CLASS: str = "bottle"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
@@ -133,6 +136,16 @@ def main(minimum_support_ratio: float) -> None:
             main(minimum_support_ratio)
         else:
             print("Runtime Has Concluded!")
+            
+    # Stage 4
+    visualise_results(basic_finished_structure.finished_grid)
+    
+    #visualise_results(informed_finished_structure.finished_grid)
+            
+def visualise_results(finished_grid: np.ndarray) -> None:
+    visualiser = BrickConstructionVisualiser(finished_grid)
+    
+    visualiser.visualise_complete_model()
     
 if __name__ == "__main__":
     main(MINIMUM_SUPPORT_RATIO)

@@ -124,3 +124,4 @@ if __name__ == "__main__":
     result_grid = ResultGrid()
     result_grid.create_result_grid(voxel_grid)
     result_grid.visualise_result_grid()
+    

@@ -67,7 +67,7 @@ def visualise_result_grid(result_grid: np.ndarray) -> None:
 # Stage 2
 def run_heuristic(result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, strategy: CandidateGenerationStrategy, minimum_support_ratio: float) -> HeuristicResult:
     
-    pipeline = HeuristicPipeline(result_grid, brick_vocabulary, strategy, minimum_support_ratio)
+    pipeline = HeuristicPipeline(result_grid, brick_vocabulary, strategy, minimum_support_ratio, True)
     
     finished_structure = pipeline.create_structure()
     
@@ -138,7 +138,8 @@ def main(minimum_support_ratio: float) -> None:
             print("Runtime Has Concluded!")
     
     # Stage 5 - specific checking for bottle at resolution 32
-    print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
+    if basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES:
+        print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
                 
     # Stage 4
     visualise_results(basic_finished_structure.finished_grid)

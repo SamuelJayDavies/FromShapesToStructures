@@ -17,11 +17,11 @@ from .HeuristicResult import HeuristicResult
 
 class HeuristicPipeline:
     
-    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy, minimum_support_ratio: float) -> None:
+    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy, minimum_support_ratio: float, defer_blocked_points: bool = False) -> None:
         prepared_result_grid = self._validate_result_grid(result_grid)
         self.brick_vocabulary = brick_vocabulary
         self.generation_strategy = generation_strategy
-            
+        self.defer_blocked_points = defer_blocked_points
         self.construction_grid = ConstructionGrid(prepared_result_grid, minimum_support_ratio=minimum_support_ratio)
         
         # Neeed to make sure the copied version is being used here
@@ -56,7 +56,7 @@ class HeuristicPipeline:
         
         self.placement_controller = CandidatePlacementController(self.construction_grid, self.candidate_generator, self.candidate_scorer, self.candidate_selector)
         
-        self.heuristic_controller = HeuristicController(self.placement_controller)
+        self.heuristic_controller = HeuristicController(self.placement_controller, self.defer_blocked_points)
         
     def _create_heuristic_result(self, placement_history: list[PlacementResult]) -> HeuristicResult:
         if not placement_history:

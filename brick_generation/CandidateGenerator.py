@@ -44,10 +44,18 @@ class CandidateGenerator:
     # We are looking for which positions are True, because our result_grid had True positions as needing to be filled and part of the target shape
     # Whereas False meant the voxel was empty or outside the target shape
     # This same rule is applied here, as either, False means it has already been covered by a birck, or is outside the target position, while True means it is ready for placement
-    def find_next_crucial_point(self, free_grid: np.ndarray) -> tuple[int, int, int] | None:
+    
+    # NEW this method will be changed not return excluded points
+    def find_next_crucial_point(self, free_grid: np.ndarray, excluded_points: set[tuple[int, int, int]]) -> tuple[int, int, int] | None:
         if(not self._validate_free_grid(free_grid)):
             raise ValueError("Free grid failed validation, look above for debugging reason")
         else:
+            if excluded_points is None:
+                excluded_points = set()
+            
+            if not isinstance(excluded_points, set):
+                raise TypeError("Excluded points needs to be a set of tuples")
+            
             size_y, size_z, size_x = free_grid.shape
 
             # This ordering ensures the model is created from the ground-layer upwards
@@ -56,9 +64,11 @@ class CandidateGenerator:
                 for z in range(size_z):
 
                     for x in range(size_x):
+                        
+                        crucial_point = (y, z, x)
 
-                        if free_grid[y, z, x]:
-                            return y, z, x
+                        if free_grid[y, z, x] and crucial_point not in excluded_points:
+                            return crucial_point
             
             return None
 

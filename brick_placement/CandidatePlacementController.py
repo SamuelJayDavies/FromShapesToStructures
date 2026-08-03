@@ -36,7 +36,13 @@ class CandidatePlacementController:
         
         return None
         
-    def place_next_brick(self) -> PlacementResult:
+    def place_next_brick(self, excluded_points: set[tuple[int, int, int]] | None=None) -> PlacementResult:
+        if excluded_points is None:
+            excluded_points = set()
+            
+        if not isinstance(excluded_points, set):
+            raise TypeError("Excluded points needs to be a set of tuples")
+        
         layer_result = self._get_next_uncovered_layer()
         
         if layer_result is None:
@@ -48,7 +54,7 @@ class CandidatePlacementController:
         
         free_grid[y] = uncovered_layer
         
-        crucial_point = self.candidate_generator.find_next_crucial_point(free_grid)
+        crucial_point = self.candidate_generator.find_next_crucial_point(free_grid, excluded_points)
         
         if crucial_point is None:
             return PlacementResult(None, None, None, 0, PlacementResult.STATUS_COMPLETE)

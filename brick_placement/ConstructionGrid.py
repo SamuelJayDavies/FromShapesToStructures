@@ -1,13 +1,17 @@
+from numbers import Real
+
 import numpy as np
 
 from brick import Brick
 
 class ConstructionGrid:
-    def __init__(self, result_grid: np.ndarray, minimum_support_ratio: float = 0.5) -> None:
+    def __init__(self, result_grid: np.ndarray, minimum_support_ratio: float = 0.5, force_support: bool = True) -> None:
 
         # Validation Checks
         if result_grid.ndim != 3:
             raise ValueError("Result Grid must be 3-dimensions of shape (y,z,x).")
+        if minimum_support_ratio < 0.0 or minimum_support_ratio > 1.0:
+            raise ValueError("Minimum support ratio must be a float between 0.0 and 1.0")
 
         self.result_grid = result_grid.astype(bool).copy()
         self.result_shape = result_grid.shape
@@ -24,6 +28,7 @@ class ConstructionGrid:
         # Currently at least half of the bricks below a newly placed brick need to be occupied for a ratio of 0.5
         # This works as a baseline configuration and no assumed universal physical law so it won't be mentioned like that in the diss
         self.minimum_support_ratio = minimum_support_ratio
+        self.force_support = force_support
 
     def is_valid_coordinate(self, y: int, z: int, x: int) -> bool:
         if y < 0 or y >= self.result_shape[0]:
@@ -177,6 +182,20 @@ class ConstructionGrid:
         else:
             return True
         
+    # NEW METHod for OPTIMISATION 
+    def validate_support(self, brick:Brick) -> bool:
+
+        # Now under the relaxed constraints a brick can pass without having to be connected or supported until later
+        if not self.force_support:
+            return True
+        # 5. The brick is connected to the ground or a block on a lower level of the y-axis 
+        elif not self.validate_brick_is_connected(brick):
+            return False
+        elif not self.validate_minimum_support(brick):
+            return False
+        else:
+            return True
+        
     def get_support_bricks(self, brick: Brick) -> set[int]:
         """ Utility method to be used in-junction with connectivity score by identifying how many different bricks are being supported below a candidate brick placement """
         if brick.y == 0:
@@ -283,11 +302,8 @@ class ConstructionGrid:
         # 4. The brick doesn't occupy the same area as an existing brick
         elif not self.validate_brick_does_not_conflict(grid_bounds):
             return False
-        # 5. The brick is connected to the ground or a block on a lower level of the y-axis 
-        elif not self.validate_brick_is_connected(brick):
-            return False
-        # 6. The brick has the minimum required level of support to remain stable
-        elif not self.validate_minimum_support(brick):
+        # 5, 6. The brick has the minimum required level of support to remain stable
+        elif not self.validate_support(brick):
             return False
         
         else:

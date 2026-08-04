@@ -17,17 +17,22 @@ from .HeuristicResult import HeuristicResult
 
 class HeuristicPipeline:
     
-    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy, minimum_support_ratio: float, defer_blocked_points: bool = False) -> None:
+    def __init__(self, result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, generation_strategy: CandidateGenerationStrategy, minimum_support_ratio: float, defer_blocked_points: bool = False, support_constraint: bool = True) -> None:
         prepared_result_grid = self._validate_result_grid(result_grid)
         self.brick_vocabulary = brick_vocabulary
         self.generation_strategy = generation_strategy
         self.defer_blocked_points = defer_blocked_points
-        self.construction_grid = ConstructionGrid(prepared_result_grid, minimum_support_ratio=minimum_support_ratio)
-        
+        self.result_grid = prepared_result_grid
+        self.minimum_support_ratio = minimum_support_ratio
+        self.support_constraint = support_constraint
+        self.construction_grid = self._create_construction_grid()
+
         # Neeed to make sure the copied version is being used here
-        self.result_grid = self.construction_grid.result_grid
-        
+        #         
         self._build_components()
+
+    def _create_construction_grid(self) -> ConstructionGrid:
+        return ConstructionGrid(self.result_grid, minimum_support_ratio=self.minimum_support_ratio, force_support=self.support_constraint)
     
         
     def _validate_result_grid(self, result_grid: np.ndarray) -> np.ndarray:

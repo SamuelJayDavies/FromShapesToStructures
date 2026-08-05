@@ -67,7 +67,7 @@ def visualise_result_grid(result_grid: np.ndarray) -> None:
 # Stage 2
 def run_heuristic(result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, strategy: CandidateGenerationStrategy, minimum_support_ratio: float) -> HeuristicResult:
     
-    pipeline = HeuristicPipeline(result_grid, brick_vocabulary, strategy, minimum_support_ratio, True, support_constraint=False)
+    pipeline = HeuristicPipeline(result_grid, brick_vocabulary, strategy, minimum_support_ratio, defer_blocked_points=True, force_support=True)
     
     finished_structure = pipeline.create_structure()
     

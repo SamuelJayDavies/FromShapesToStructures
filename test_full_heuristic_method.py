@@ -25,7 +25,7 @@ MODEL_CLASS: str = "bottle"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 8
+RESOLUTION: int = 32
 
 MINIMUM_SUPPORT_RATIO = 0.5
 # Sofas need a support ratio of 0.25

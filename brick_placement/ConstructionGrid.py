@@ -144,6 +144,36 @@ class ConstructionGrid:
         else:
             support_region = self.current_grid[y-1, z_start:z_end, x_start:x_end]
             return support_region
+    
+    # Needed for optimisation later as it shows all the coordinates that a brick occupies
+    def get_brick_footprint_coordinates(self, brick: Brick) -> list[tuple[int, int, int]]:
+
+        if not self.validate_brick_in_bounds(brick):
+            raise ValueError("Bricks footprint cant go outside bounds")
+        
+        footprint_coordinates: list[tuple[int, int, int]] = []
+        
+        for current_z in range(brick.z, brick.z + brick.size_z()):
+            for current_x in range(brick.x, brick.x + brick.size_x()):
+                footprint_coordinates.append((brick.y, current_z, current_x))
+                
+        return footprint_coordinates
+    
+    def get_unsupported_footprint_coordinates(self, brick: Brick) -> list[tuple[int, int, int]]:
+        if brick.y == 0:
+            return []
+        else:
+            footprint_coordinates = self.get_brick_footprint_coordinates(brick)
+            unsupported_coordinates: list[tuple[int, int, int]] = []
+            
+            for coorindate in footprint_coordinates:
+                current_y, current_z, current_x = coorindate
+                
+                supporting_brick_id = self.current_grid[current_y - 1, current_z, current_x]
+                if supporting_brick_id == -1:
+                    unsupported_coordinates.append(coorindate)
+
+            return unsupported_coordinates
 
     def validate_brick_is_connected(self, brick: Brick) -> bool:
         # No need to check if in bounds, already checked
@@ -158,7 +188,22 @@ class ConstructionGrid:
             return False
         else:
             return True
-    
+        
+    def calculate_support_ratio(self, brick:Brick) -> float:
+        if brick.y == 0:
+            return 1.0
+        else:
+            footprint_coordinates = self.get_brick_footprint_coordinates(brick)
+            
+            unsupported_coordinates = self.get_unsupported_footprint_coordinates(brick)
+            
+            total_occupied_area = len(footprint_coordinates)
+            supported_occupied_area = total_occupied_area - len(unsupported_coordinates)
+            
+            support_ratio = supported_occupied_area / total_occupied_area
+            return support_ratio
+            
+    """
     def calculate_support_ratio(self, brick:Brick) -> float:
         if brick.y == 0:
             return 1.0
@@ -171,6 +216,7 @@ class ConstructionGrid:
 
             support_ratio = supported_studs / total_occupied_area
             return support_ratio
+    """
 
     def validate_minimum_support(self, brick:Brick) -> bool:
 

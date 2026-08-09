@@ -2,6 +2,9 @@ from numbers import Real
 
 import numpy as np
 
+from collections import deque
+from collections.abc import Iterable
+
 from brick import Brick
 
 class ConstructionGrid:
@@ -242,6 +245,7 @@ class ConstructionGrid:
         else:
             return True
         
+    # Remember this is for optimisation later where I can get connected bricks for graph structure - NEW STUFF
     def get_support_bricks(self, brick: Brick) -> set[int]:
         """ Utility method to be used in-junction with connectivity score by identifying how many different bricks are being supported below a candidate brick placement """
         if brick.y == 0:
@@ -261,10 +265,10 @@ class ConstructionGrid:
         """ Compares against the result layer and the current occupied current grid to return what positions need to be covered and which are currently uncovered
         
         Args:
-            y: the y-coordinate of the layer that is being returned
+            y (int): the y-coordinate of the layer that is being returned
             
         Returns;
-            An array with the same shape as the current_grid with True positions needing to be filled, and the False positions not needing to be filled or already occupied"""
+            np.ndarray: An array with the same shape as the current_grid with True positions needing to be filled, and the False positions not needing to be filled or already occupied"""
         if y < 0 or y >= self.result_shape[0]:
             raise TypeError("Layer coordinate y is outside of the construction grid")
         
@@ -363,43 +367,112 @@ class ConstructionGrid:
 
             brick_id = len(self.placed_bricks)
 
-            # Place the brick in the brick class
+            
             brick.place_brick(brick_id)
 
-            # Place the brick in the brick array
+            
             self.placed_bricks.append(brick)
 
-            # Place the brick inside the grid_bounds
+            
             grid_bounds[:, :] = brick_id
-        
-        
+            
+            
+    def get_bricks_above(self, brick: Brick) -> set[int]:
+        """ Returns brick ids above the brick
 
+        Args:
+            brick (Brick): The brick being queried for relationships above
 
-    """  
-    def place_brick(self, brick: Brick) -> None:
-
-        if brick.is_placed():
-            raise ValueError("Brick has already been placed.")
-        elif not self.validate_is_within_model(brick):
-            raise ValueError("Brick cannot extend outside of the model's structure")
+        Returns:
+            set[int]: A set containing each brick id that is connected above the brick
+        """
+        # Can't be any bricks above the maximum bounds of the shape
+        if brick.y == self.result_shape[0] - 1:
+            return set()
         else:
-            grid_bounds = self.get_grid_region(brick)
+            
+            y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
+            
+            region_above = self.current_grid[y+1, z_start:z_end, x_start:x_end]
+            
+            valid_bricks = region_above[region_above != -1]
+            
+            individual_brick_ids: set[int] = set()
+            
+            for brick_id in np.unique(valid_bricks):
+                individual_brick_ids.add(int(brick_id)) # because they are np integers not python int 
+                
+            return individual_brick_ids
+        
+    
+    def get_vertically_connected_brick_ids(self, starting_brick_ids: Iterable[int], excluded_brick_ids: Iterable[int] | None = None) -> tuple[int, ...]:
+        """ Uses the starting brick id and 
 
-            if not self.validate_brick_does_not_conflict(grid_bounds):
-                raise ValueError("Brick cannot be placed as it conflicts with existing bricks.")
-            elif not self.validate_brick_is_connected(brick):
-                raise ValueError("Brick cannot be placed because it is not connected to a brick on a lower-level")
-            elif not self.validate_minimum_support(brick):
-                raise ValueError("Brick does not meet the required threshold of " + str(self.minimum_support_ratio) + " ratio of support studs")
-            else:
-                brick_id = len(self.placed_bricks)
+        Args:
+            starting_brick_ids (Iterable[int]): _description_
+            excluded_brick_ids (Iterable[int] | None, optional): _description_. Defaults to None.
 
-                # Place the brick in the brick class
-                brick.place_brick(brick_id)
+        Raises:
+            ValueError: _description_
 
-                # Place the brick in the brick array
-                self.placed_bricks.append(brick)
+        Returns:
+            tuple[int, ...]: _description_
+        """
+        starting_ids = {int(brick_id) for brick_id in starting_brick_ids}
 
-                # Place the brick inside the grid_bounds
-                grid_bounds[:, :] = brick_id
-    """
+        
+        if excluded_brick_ids is not None:
+            excluded_ids = {int(brick_id) for brick_id in excluded_brick_ids}
+            starting_ids.difference_update(excluded_brick_ids)
+        else:
+            excluded_ids: set[int] = set()
+        
+        for brick_id in starting_ids:
+            if brick_id < 0 or brick_id >= len(self.placed_bricks):
+                raise ValueError("Brick id cannot be negative nor a number greater than the amount of placed bricks")
+        
+        ordered_starting_ids = sorted(starting_ids)
+        
+        id_queue = deque(ordered_starting_ids)
+        
+        discovered_ids = set(ordered_starting_ids)
+        
+        while id_queue:
+            
+            current_brick_id = id_queue.popleft()
+            
+            current_brick = self.placed_bricks[current_brick_id]
+            
+            connected_bricks_ids = self.get_support_bricks(current_brick)
+            connected_bricks_ids.update(self.get_bricks_above(current_brick))
+            
+            for connected_brick_id in sorted(connected_bricks_ids):
+                
+                if connected_brick_id not in excluded_ids and connected_brick_id not in discovered_ids:
+                    discovered_ids.add(connected_brick_id)
+                    id_queue.append(connected_brick_id)
+                    
+        return tuple(sorted(discovered_ids))
+            
+    def get_grounded_brick_ids(self, excluded_brick_ids: Iterable[int] | None = None) -> tuple[int, ...]:
+        
+        if excluded_brick_ids is None:
+            excluded_ids: set[int] = set()
+        else:
+            excluded_ids = {int(brick_id) for brick_id in excluded_brick_ids}
+        
+        ground_layer = self.current_grid[0]
+        ground_layer = ground_layer.flat
+        
+        grounded_brick_ids = {int(brick_id) for brick_id in ground_layer if brick_id != -1}
+        
+        if excluded_brick_ids is not None:
+            grounded_brick_ids.difference_update(excluded_brick_ids)
+        
+        grounded_bricks = self.get_vertically_connected_brick_ids(grounded_brick_ids, excluded_ids)
+        
+        return grounded_bricks
+            
+        
+        
+        

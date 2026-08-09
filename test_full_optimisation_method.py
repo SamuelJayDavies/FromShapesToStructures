@@ -27,11 +27,11 @@ from optimisation_controller.StructuralViolation import StructuralViolation
 from optimisation_controller.ViolationCluster import ViolationCluster
 from optimisation_controller.ViolationGrouper import ViolationGrouper
 
-MODEL_CLASS: str = "bottle"
+MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 32
+RESOLUTION: int = 16
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example

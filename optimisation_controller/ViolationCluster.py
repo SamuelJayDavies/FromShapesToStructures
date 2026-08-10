@@ -36,7 +36,7 @@ class ViolationCluster:
                 coordinates_set.add(coordinate)
                 
                 
-        return tuple(sorted(coordinates_set, key=lambda coordinates: (coordinate[0], coordinate[1], coordinate[2])))
+        return tuple(sorted(coordinates_set, key=lambda coordinate: (coordinate[0], coordinate[1], coordinate[2])))
     
     def _calculate_cluster_bounds(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         
@@ -47,14 +47,11 @@ class ViolationCluster:
         z_coordinates = [coordinate[1] for coordinate in self.footprint_coordinates]
         x_coordinates = [coordinate[2] for coordinate in self.footprint_coordinates]
         
-        y_bounds = min(y_coordinates)
+        y_bounds = (min(y_coordinates), max(y_coordinates))
         z_bounds = (min(z_coordinates), max(z_coordinates))
         x_bounds = (min(x_coordinates), max(x_coordinates))
         
         return (y_bounds, z_bounds, x_bounds)
-    
-    def get_violation_ids(self):
-        return self.violation_brick_ids
     
     def __repr__(self) -> str:
         return "Violation Cluster (cluster_id + " + str(self.cluster_id) + ") violation brick ids " + str(self.violation_brick_ids) + " violation count " + str(self.violation_count) + " y_bounds " + str(self.y_bounds) + " z_bounds " + str(self.z_bounds) + " x_bounds " + str(self.x_bounds) + " total support deficit " + str(self.total_support_deficit) + " floating violation count" + str(self.floating_violation_count)

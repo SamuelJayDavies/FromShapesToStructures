@@ -1,5 +1,5 @@
 from brick_placement import ConstructionGrid
-from ViolationCluster import ViolationCluster
+from optimisation_controller.ViolationCluster import ViolationCluster
 
 class StructuralGroundedChecker:
     
@@ -22,9 +22,9 @@ class StructuralGroundedChecker:
         Returns:
             tuple[int, ...]: A tuple of brick ids that are boundary to the cluster
         """
-        cluster_brick_ids = set(cluster.get_violation_ids())
+        cluster_brick_ids = set(cluster.violation_brick_ids)
         
-        boundary_brick_ids = set[int] = set()
+        boundary_brick_ids: set[int] = set()
         
         for cluster_brick_id in sorted(cluster_brick_ids):
             
@@ -49,7 +49,7 @@ class StructuralGroundedChecker:
         Returns:
             tuple[int, ...]: Brick ids that are grounded regardless of cluster brick involvement.
         """
-        cluster_brick_ids = cluster.get_violation_ids()
+        cluster_brick_ids = cluster.violation_brick_ids
         
         boundary_brick_ids = set(self.get_cluster_boundary_brick_ids(cluster))
         
@@ -68,7 +68,7 @@ class StructuralGroundedChecker:
         Returns:
             tuple[tuple[int, ...], ...]: _description_
         """
-        cluster_brick_ids = set(cluster.get_violation_ids())
+        cluster_brick_ids = set(cluster.violation_brick_ids)
         
         grounded_boundary_brick_ids = set(self.get_grounded_boundary_brick_ids(cluster))
         

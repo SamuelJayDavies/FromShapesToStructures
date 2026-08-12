@@ -1,6 +1,7 @@
 from brick.Brick_vocabulary import Brick_vocabulary
 from brick.BrickType import BrickType
 from optimisation_controller.StructuralViolation import StructuralViolation
+from brick.Brick import Brick
 
 class ReplacementCandidateGenerator:
     
@@ -113,3 +114,18 @@ class ReplacementCandidateGenerator:
                 candidate_origins.append((target_violation.layer, origin_z, origin_x))
         
         return candidate_origins
+    
+    def create_replacement_candidate(self, brick_type: BrickType, candidate_orientation: tuple[int, int], candidate_origin: tuple[int, int, int]) -> Brick:
+        """ Creates an unplaced brick that represents a possible candidate
+
+        Args:
+            brick_type (BrickType): The brick type of the proposed brick
+            candidate_orietation (tuple[int, int]): The candidate orientation in (x, z) order
+            candidate_origin (tuple[int, int, int]): The origin of the candidate
+
+        Returns:
+            Brick: An unplaced placement brick candidate
+        """
+        candidate_y, candidate_z, candidate_x = candidate_origin
+        
+        return Brick(brick_type, candidate_y, candidate_z, candidate_x, candidate_orientation)

@@ -26,7 +26,7 @@ class StructuralRepairEvaluator:
         Returns:
             str | None: The classification of DISCONNECTED or EXCESSIVE_DISTANCE or None (if the cluster does not need a repair)
         """
-        grounded_classification = self.grounded_checker.classify_cluster_grounding(cluster)
+        grounded_classification = self.grounded_checker.classify_cluster_support(cluster)
         
         if grounded_classification == StructuralGroundedChecker.CLASSIFICATION_DISCONNECTED:
             return self.REPAIR_DISCONNECTED
@@ -56,5 +56,6 @@ class StructuralRepairEvaluator:
         repair_reason = self.get_repair_classification(cluster)
         
         return repair_reason is not None
+        
                     
                     

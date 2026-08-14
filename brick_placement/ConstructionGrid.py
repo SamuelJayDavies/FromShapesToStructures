@@ -473,6 +473,44 @@ class ConstructionGrid:
         
         return grounded_bricks
             
+    def replace_brick(self, target_brick_id: int, replacement_brick: Brick) -> None:
+        
+        if target_brick_id < 0 or target_brick_id >= len(self.placed_bricks):
+            raise ValueError("Brick ID can not possibly exist")
+        elif replacement_brick.is_placed():
+            raise ValueError("Cannot place a brick that has already been placed")
+        elif not self.validate_brick_in_bounds(replacement_brick):
+            raise ValueError("Replacement brick cannot be placed outside of the construction grid")
+        else:
+            
+            replacement_region = self.get_grid_region(replacement_brick)
+            
+            conflicting_cells = ((replacement_region != -1) & (replacement_region != target_brick_id))
+            
+            if np.any(conflicting_cells):
+                raise ValueError("Replacement brick conflicts with an unrelated brick")
+            
+            target_brick = self.placed_bricks[target_brick_id]
+            
+            # Extra validation for grid mutation outside of the target shape
+            target_coordinates = set(self.get_brick_footprint_coordinates(target_brick))
+            replacement_coordinates = set(self.get_brick_footprint_coordinates(replacement_brick))
+            if not target_coordinates.issubset(replacement_coordinates):
+                raise ValueError("replacement brick needs to contain the complete target brick footprint")
+            
+            target_y, target_z_start, target_z_end, target_x_start, target_x_end = self.get_brick_bounds(target_brick)
+            
+            target_region = self.current_grid[target_y, target_z_start:target_z_end, target_x_start:target_x_end]
+            
+            target_region[target_region == target_brick_id] = -1
+            
+            replacement_brick.place_brick(target_brick_id)
+            
+            self.placed_bricks[target_brick_id] = replacement_brick
+            
+            replacement_y, replacement_z_start, replacement_z_end, replacement_x_start, replacement_x_end = self.get_brick_bounds(replacement_brick)
+            
+            self.current_grid[replacement_y, replacement_z_start:replacement_z_end, replacement_x_start:replacement_x_end] = target_brick_id
         
         
         

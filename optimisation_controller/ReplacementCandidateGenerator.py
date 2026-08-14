@@ -129,3 +129,21 @@ class ReplacementCandidateGenerator:
         candidate_y, candidate_z, candidate_x = candidate_origin
         
         return Brick(brick_type, candidate_y, candidate_z, candidate_x, candidate_orientation)
+    
+    def generate_replacement_candidates(self, target_violation: StructuralViolation) -> list[Brick]:
+        
+        replacement_candidates: list[Brick] = []
+        
+        candidate_brick_orientations = self.get_candidate_brick_orientations(target_violation)
+        
+        for brick_type, candidate_orientation in candidate_brick_orientations:
+            
+            candidate_origins = self.get_candidate_origins(target_violation, candidate_orientation)
+            
+            for candidate_origin in candidate_origins:
+                
+                candidate = self.create_replacement_candidate(brick_type, candidate_orientation, candidate_origin)
+                
+                replacement_candidates.append(candidate)
+        
+        return replacement_candidates

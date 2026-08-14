@@ -1,4 +1,5 @@
 from optimisation_controller.ViolationCluster import ViolationCluster
+from optimisation_controller.StructuralViolation import StructuralViolation
 from optimisation_controller.UnsupportedDistanceEvaluator import UnsupportedDistanceEvaluator
 
 class StructuralRepairSelector:
@@ -7,7 +8,7 @@ class StructuralRepairSelector:
         self.unsupported_distance_evaluator = distance_eval
         
     
-    def get_violation_containing_coordinate(self, cluster: ViolationCluster, coordinate: tuple[int, int, int]) -> ViolationCluster:
+    def get_violation_containing_coordinate(self, cluster: ViolationCluster, coordinate: tuple[int, int, int]) -> StructuralViolation:
         
         matching_violations = []
         
@@ -22,14 +23,14 @@ class StructuralRepairSelector:
         else:
             return matching_violations[0]
         
-    def get_second_repair_target_violation_choice(self, cluster: ViolationCluster) -> ViolationCluster:
+    def get_second_repair_target_violation_choice(self, cluster: ViolationCluster) -> StructuralViolation:
         
         if not cluster.violations:
             raise ValueError("Cannot select a repair target from a non-existent violation cluster")
         else:
             return min(cluster.violations, key=lambda violation: (violation.layer, violation.brick_id))
         
-    def get_reapir_target_violation(self, cluster: ViolationCluster) -> ViolationCluster:
+    def get_repair_target(self, cluster: ViolationCluster) -> StructuralViolation:
         
         if not cluster.violations:
             raise ValueError("Cannot select a repair target from an empty violation cluster")

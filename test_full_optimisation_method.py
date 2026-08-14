@@ -27,14 +27,28 @@ from optimisation_controller.StructuralViolation import StructuralViolation
 from optimisation_controller.ViolationCluster import ViolationCluster
 from optimisation_controller.ViolationGrouper import ViolationGrouper
 
-MODEL_CLASS: str = "mug"
+# Stage 2A - The Structural Repair and Evaluator Thing
+from optimisation_controller.StructuralGroundedChecker import StructuralGroundedChecker
+from optimisation_controller.UnsupportedDistanceEvaluator import UnsupportedDistanceEvaluator
+from optimisation_controller.StructuralRepairEvaluator import StructuralRepairEvaluator
+from optimisation_controller.StructuralRepairSelector import StructuralRepairSelector
+
+from optimisation_controller.ReplacementCandidateGenerator import ReplacementCandidateGenerator
+from optimisation_controller.ReplacementCandidateEvaluator import ReplacementCandidateEvaluator
+
+from optimisation_controller.StructuralRepairController import StructuralRepairController
+from optimisation_controller.OptimisationStatistics import OptimisationStatistics
+
+MODEL_CLASS: str = "bottle"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 16
+RESOLUTION: int = 64
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
+
+MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = 2
 # Sofas need a support ratio of 0.25
 
 # Stage 1
@@ -79,6 +93,36 @@ def run_heuristic(result_grid: np.ndarray, brick_vocabulary: Brick_vocabulary, s
     finished_structure = pipeline.create_structure()
     
     return finished_structure
+
+def run_optimisation(finished_structure: HeuristicResult, brick_vocab: Brick_vocabulary, minimum_support_ratio: float, maximum_unsupported_distance_accepted: int) -> OptimisationStatistics:
+    
+    construction_grid = finished_structure.construction_grid
+    
+    violation_detector = StructuralViolationDetector(minimum_support_ratio)
+    violation_grouper = ViolationGrouper()
+    
+    grounded_checker = StructuralGroundedChecker(construction_grid)
+    distance_evaluator = UnsupportedDistanceEvaluator(construction_grid, grounded_checker)
+    
+    repair_evaluator = StructuralRepairEvaluator(grounded_checker, distance_evaluator, maximum_unsupported_distance_accepted)
+    
+    repair_selector = StructuralRepairSelector(distance_evaluator)
+    
+    replacement_candidate_generator = ReplacementCandidateGenerator(brick_vocab)
+    replacement_candidate_evaluator = ReplacementCandidateEvaluator(construction_grid)
+    
+    optimisation_statistics = OptimisationStatistics()
+    
+    repair_controller = StructuralRepairController(construction_grid, violation_detector, violation_grouper, repair_evaluator, repair_selector, replacement_candidate_generator, replacement_candidate_evaluator, optimisation_statistics)
+    
+    suceessful_repair = repair_controller.repair_with_replacement()
+    
+    print("Replacement Repair Results")
+    print("==========================")
+    print("Replacement repair sucessful" + str(suceessful_repair))
+    
+    return optimisation_statistics
+    
 
 # Stage 3 - Comparing final grid to result_grid
 def compare_final_to_result(finished_structure: HeuristicResult, strategy: CandidateGenerationStrategy) -> None:
@@ -143,12 +187,8 @@ def main(minimum_support_ratio: float) -> None:
     
     generate_violation_clusters(basic_violations)
     
-    if (basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES and informed_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES):
-        minimum_support_ratio -= 0.05
-        if (minimum_support_ratio >= FINAL_SUPPORT_RATIO):
-            return main(minimum_support_ratio) # CHANGE THIS FROM RETURN TO JUST MAIN(minimum_SUPPORT_RATIO) to GET THE EXAMPLE WITH TEH SOFA HAVING A GAP IN THE MIDDLE
-        else:
-            print("Runtime Has Concluded!")
+    # Stage 2A - Optimisation FINALLE!!!
+    basic_optimisation_statistics = run_optimisation(basic_finished_structure, brick_vocabulary, minimum_support_ratio, MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED)
     
     # Stage 5 - specific checking for bottle at resolution 32
     if basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES:

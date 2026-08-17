@@ -42,7 +42,7 @@ from optimisation_controller.OptimisationStatistics import OptimisationStatistic
 # Stage 3A - Improving Visualisations
 from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
 
-MODEL_CLASS: str = "chair"
+MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
@@ -219,6 +219,7 @@ def visualise_results(finished_grid: np.ndarray, violations: list[StructuralViol
     visualiser = BrickConstructionVisualiser(finished_grid, brick_statuses)
     
     visualiser.visualise_complete_model()
+    visualiser.visualise_layer_by_layer()
 
 def create_support_visualisation_statuses(violations: list[StructuralViolation]) -> dict[int, str]:
     brick_statuses: dict[int, str] = {}

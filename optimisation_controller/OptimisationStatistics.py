@@ -2,6 +2,10 @@ from optimisation_controller.StructuralGroundedChecker import StructuralGrounded
 
 class OptimisationStatistics:
     
+    NO_GENERATED_CANDIDATES = "NO_GENERATED_CANDIDATES"
+    NO_VALID_CANDIDATE = "NO_VALID_CANDIDATE"
+    NO_BENEFICIAL_CANDIDATE = "NO_BENEFICIAL_CANDIDATE"
+    
     def __init__(self) -> None:
         
         # Construction
@@ -28,6 +32,14 @@ class OptimisationStatistics:
         self.replacement_attempt_count = 0
         self.successful_replacement_count = 0
         self.failed_replacement_count = 0
+        
+        # Post Results
+        self.generated_replacement_candidate_count = 0
+        self.valid_replacement_candidate_count = 0
+        
+        self.no_generated_replacement_candidate_count = 0
+        self.no_valid_replacement_candidate_count = 0
+        self.no_beneficial_replacement_candidate_count = 0
         
         self.support_improving_replacement_count = 0
         self.grounded_attachment_replacement_count = 0
@@ -79,6 +91,36 @@ class OptimisationStatistics:
         
         return results
     
+    def record_replacement_attempt(self) -> None:
+        self.replacement_attempt_count += 1
+        
+    def record_failed_replacement(self, failure_reason: str) -> None:
+        
+        self.failed_replacement_count += 1
+        
+        if failure_reason == self.NO_GENERATED_CANDIDATES:
+            self.no_generated_replacement_candidate_count += 1
+        elif failure_reason == self.NO_VALID_CANDIDATE:
+            self.no_valid_replacement_candidate_count += 1
+        elif failure_reason == self.NO_BENEFICIAL_CANDIDATE:
+            self.no_beneficial_replacement_candidate_count += 1
+        else:
+            raise ValueError("Structural Repair failed for an unknown reason: " + failure_reason)
+        
+    def record_successful_replacement(self, support_improvement: float, grounded_attachment_count: int) -> None:
+        self.successful_replacement_count += 1
+        
+        if support_improvement > 0:
+            self.support_improving_replacement_count += 1
+        if grounded_attachment_count > 0:
+            self.grounded_attachment_replacement_count += 1
+            
+    def record_generated_replacement_candidates(self, candidate_count: int) -> None:
+        self.generated_replacement_candidate_count += candidate_count
+        
+    def record_valid_replacement_candidates(self, candidate_count: int) -> None:
+        self.valid_replacement_candidate_count += candidate_count
+    
     def print_initial_audit_summary(self) -> None:
         
         print("\n INITIAL OPTIMISATION STRUCTURAL AUDIT")
@@ -99,3 +141,20 @@ class OptimisationStatistics:
         print("Required Repair Clusters: " + str(self.initial_required_repair_cluster_count))
         
         print("Structurally sound weak bricks: " + str(self.structurally_sound_weak_brick_count))
+        
+    def print_replacement_repair_summary(self) -> None:
+        
+        print("\nREPLACEMENT REPAIR RESULTS")
+        print("----------------------------")
+        
+        print("Replacement Attempts: " + str(self.replacement_attempt_count))
+        print("Generated Replacement Candidates: " + str(self.generated_replacement_candidate_count))
+        print("Valid Replacement Candidates: " + str(self.valid_replacement_candidate_count))
+        print("Successful Replacements: " + str(self.successful_replacement_count))
+        print("Failed Replacements: " + str(self.failed_replacement_count))
+        print("Failures - No Generated Candidates: " + str(self.no_generated_replacement_candidate_count))
+        print("Failures - No Valid Candidates: " + str(self.no_valid_replacement_candidate_count))
+        print("Fialures - No Beneficial Candidate: " + str(self.no_beneficial_replacement_candidate_count))
+        print("Replacments - That Improved Support: " + str(self.support_improving_replacement_count))
+        print("Replacements - That Improved Grounded-Attachment: " + str(self.grounded_attachment_replacement_count))
+        print("Unresolved Repair-Required Clusters: " + str(self.unresolved_cluster_count))

@@ -36,9 +36,10 @@ class StructuralRepairSelector:
             raise ValueError("Cannot select a repair target from an empty violation cluster")
         else:
             furthest_coordinate = (self.unsupported_distance_evaluator.get_furthest_unsupported_coordinate(cluster))
-            
+            print("Furthest unsupported result:", furthest_coordinate)
             if furthest_coordinate is None:
                 return self.get_second_repair_target_violation_choice(cluster)
             else:
-                return self.get_violation_containing_coordinate(cluster, furthest_coordinate)
+                furthest_result, _ = furthest_coordinate
+                return self.get_violation_containing_coordinate(cluster, furthest_result)
             

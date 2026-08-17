@@ -39,11 +39,11 @@ from optimisation_controller.ReplacementCandidateEvaluator import ReplacementCan
 from optimisation_controller.StructuralRepairController import StructuralRepairController
 from optimisation_controller.OptimisationStatistics import OptimisationStatistics
 
-MODEL_CLASS: str = "bottle"
+MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 64
+RESOLUTION: int = 16
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
@@ -189,6 +189,7 @@ def main(minimum_support_ratio: float) -> None:
     
     # Stage 2A - Optimisation FINALLE!!!
     basic_optimisation_statistics = run_optimisation(basic_finished_structure, brick_vocabulary, minimum_support_ratio, MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED)
+    basic_optimisation_statistics.print_replacement_repair_summary()
     
     # Stage 5 - specific checking for bottle at resolution 32
     if basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES:
@@ -233,7 +234,7 @@ def print_blocked_layer_diagnostics(
     print(support_layer.astype(int))
     
 # Stage 1A - checking for structural violations
-def check_structural_support_violations(finished_structure: HeuristicResult, strategy: CandidateGenerationStrategy, minimum_support_ratio: float) -> list[StructuralViolation]:
+def check_structural_support_violations(finished_structure: HeuristicResult, strategy: CandidateGenerationStrategy, minimum_support_ratio: float, verbose: bool=False) -> list[StructuralViolation]:
     
     detector = StructuralViolationDetector(minimum_support_ratio)
     
@@ -248,32 +249,34 @@ def check_structural_support_violations(finished_structure: HeuristicResult, str
     print("Total Support Deficit: " + str(total_support_deficit))
     print("Floating Brick Count: " + str(floating_brick_count))
     
-    print("List of Violations:")
-    print("------------------------------------------------")
-    for violation in violations:
-        print(violation)
+    if verbose:
+        print("List of Violations:")
+        print("------------------------------------------------")
+        for violation in violations:
+            print(violation)
         
     return violations
         
-def generate_violation_clusters(violations: list[StructuralViolation]):
+def generate_violation_clusters(violations: list[StructuralViolation], verbose: bool=False):
     
     cluster_creator = ViolationGrouper()
     
     clusters = cluster_creator.group_violations(violations)
     
-    print("Structural Violation Clusters")
-    print ("=======================================")
+    if verbose:
+        print("Structural Violation Clusters")
+        print ("=======================================")
     
-    print("Amount of clusters " + str(len(clusters)))
+        print("Amount of clusters " + str(len(clusters)))
     
-    for cluster in clusters:
-        print("\n" + str(cluster))
-        
-        print("Violations")
-        
-        for violation in cluster.violations:
+        for cluster in clusters:
+            print("\n" + str(cluster))
             
-            print("Brick ID " + str(violation.brick_id) + " at y:" + str(violation.brick.y) + " z: " + str(violation.brick.z) + " x: " + str(violation.brick.x))
+            print("Violations")
+            
+            for violation in cluster.violations:
+                
+                print("Brick ID " + str(violation.brick_id) + " at y:" + str(violation.brick.y) + " z: " + str(violation.brick.z) + " x: " + str(violation.brick.x))
 
 if __name__ == "__main__":
     main(MINIMUM_SUPPORT_RATIO)

@@ -13,6 +13,10 @@ from brick.Brick import Brick
 
 class StructuralRepairController:
     
+    NO_GENERATED_CANDIDATES = "NO_GENERATED_CANDIDATES"
+    NO_VALID_CANDIDATE = "NO_VALID_CANDIDATE"
+    NO_BENEFICIAL_CANDIDATE = "NO_BENEFICIAL_CANDIDATE"
+    
     def __init__(self, construction_grid: ConstructionGrid, violation_detector: StructuralViolationDetector, violation_grouper: ViolationGrouper, structural_repair_evaluator: StructuralRepairEvaluator, repair_selector: StructuralRepairSelector, 
                  replacement_candidate_generator: ReplacementCandidateGenerator, replacement_candidate_evaluator: ReplacementCandidateEvaluator, optimisation_statistics: OptimisationStatistics):
         
@@ -51,9 +55,16 @@ class StructuralRepairController:
         Returns:
             bool: True if the replacement was successful, False if not valid structural repair could be found
         """
+        self.optimisation_statistics.record_replacement_attempt()
         
         target_violation = self.repair_selector.get_repair_target(cluster)
         replacement_candidates = self.replacement_candidate_generator.generate_replacement_candidates(target_violation)
+        
+        self.optimisation_statistics.record_generated_replacement_candidates(len(replacement_candidates))
+        
+        if not replacement_candidates:
+            self.optimisation_statistics.record_failed_replacement(StructuralRepairController.NO_GENERATED_CANDIDATES)
+            return False
         
         candidate_evaluations: list[tuple[Brick, float, int, int]] = []
         
@@ -68,15 +79,28 @@ class StructuralRepairController:
                 outside_target_count = self.replacement_candidate_evaluator.get_outside_target_coordinate_count(candidate)
                 
                 candidate_evaluations.append((candidate, support_improvement, attachment_count, outside_target_count))
+                
+        self.optimisation_statistics.record_valid_replacement_candidates(len(candidate_evaluations))
+        
+        if not candidate_evaluations:
+            self.optimisation_statistics.record_failed_replacement(self.NO_VALID_CANDIDATE)
+            return False
         
         best_candidate = self.replacement_candidate_evaluator.select_best_candidate(candidate_evaluations)
         
         if best_candidate is None:
+            self.optimisation_statistics.record_failed_replacement(self.NO_BENEFICIAL_CANDIDATE)
             return False
         else:
-            self.construction_grid.replace_brick(target_brick_id=target_violation.brick_id, replacement_brick=best_candidate)
+            selected_evaluation = next(evaluation for evaluation in candidate_evaluations if evaluation[0] is best_candidate)
             
-            return True
+            if selected_evaluation is None:
+                raise ValueError("Selected replacement candidate is missings its evaluation")
+            else:
+                _, support_improvement, attachment_count, outside_target_count = selected_evaluation
+                self.construction_grid.replace_brick(target_brick_id=target_violation.brick_id, replacement_brick=best_candidate)
+                self.optimisation_statistics.record_successful_replacement(support_improvement, attachment_count)
+                return True
         
     def repair_with_replacement(self, maximum_iterations: int = 100) -> bool:
         
@@ -85,24 +109,39 @@ class StructuralRepairController:
         
         repair_iteration = 0
         
+        unresolved_cluster_ids: set[tuple[int, ...]] = set()
+        
         while repair_iteration < maximum_iterations:
             
             required_repair_clusters = self.get_required_repair_clusters()
             
             if not required_repair_clusters:
+                self.optimisation_statistics.unresolved_cluster_count = 0
                 return True
             else:
+                current_required_cluster_ids = {self._get_cluster_unique_id(cluster) for cluster in required_repair_clusters}
+                unresolved_cluster_ids.intersection_update(current_required_cluster_ids)
+                repairable_clusters = [cluster for cluster in required_repair_clusters if self._get_cluster_unique_id(cluster) not in unresolved_cluster_ids]
                 
-                current_cluster = required_repair_clusters[0]
+                if not repairable_clusters:
+                    self.optimisation_statistics.unresolved_cluster_count = len(required_repair_clusters)
+                    return False
+                
+                current_cluster = repairable_clusters[0]
+                current_cluster_id = self._get_cluster_unique_id(current_cluster)
                 
                 sucessful_placement = self.attempt_replacement_repair(current_cluster)
                 
-                if not sucessful_placement:
-                    return False
-                
                 repair_iteration += 1
-        
+                
+                if not sucessful_placement:
+                    unresolved_cluster_ids.add(current_cluster_id)
+                
+
         raise RuntimeError("Exceeded maximum repair iterations")
+    
+    def _get_cluster_unique_id(self, cluster: ViolationCluster) -> tuple[int, ...]:
+        return tuple(sorted(violation.brick_id for violation in cluster.violations))
     
     def record_initial_structural_statistics(self) -> None:
         
@@ -126,3 +165,5 @@ class StructuralRepairController:
                 cluster_audit_result.append((cluster, grounded_classificaiton, required_repair))
             
             self.optimisation_statistics.record_initial_cluster_audit(cluster_audit_result)
+            
+    

@@ -117,6 +117,8 @@ class StructuralRepairController:
             
             if not required_repair_clusters:
                 self.optimisation_statistics.unresolved_cluster_count = 0
+                
+                self.record_final_structural_statistics()
                 return True
             else:
                 current_required_cluster_ids = {self._get_cluster_unique_id(cluster) for cluster in required_repair_clusters}
@@ -125,6 +127,8 @@ class StructuralRepairController:
                 
                 if not repairable_clusters:
                     self.optimisation_statistics.unresolved_cluster_count = len(required_repair_clusters)
+                    
+                    self.record_final_structural_statistics()
                     return False
                 
                 current_cluster = repairable_clusters[0]
@@ -166,4 +170,22 @@ class StructuralRepairController:
             
             self.optimisation_statistics.record_initial_cluster_audit(cluster_audit_result)
             
-    
+    def record_final_structural_statistics(self) -> None:
+        final_violations = self.violation_detector.detect_violations(self.construction_grid)
+        
+        self.optimisation_statistics.record_final_basic_audit(final_violations)
+        
+        if not final_violations:
+            self.optimisation_statistics.record_final_cluster_audit([])
+        else:
+            final_clusters = self.violation_grouper.group_violations(final_violations)
+            
+            cluster_repair_results: list[tuple[ViolationCluster, bool]] = []
+            
+            for cluster in final_clusters:
+                
+                required_repair = self.repair_evaluator.requires_repair(cluster)
+                
+                cluster_repair_results.append((cluster, required_repair))
+                
+            self.optimisation_statistics.record_final_cluster_audit(cluster_repair_results)

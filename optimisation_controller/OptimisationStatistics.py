@@ -45,6 +45,8 @@ class OptimisationStatistics:
         self.grounded_attachment_replacement_count = 0
         
         # Final Results
+        self.final_violaiton_brick_ids: set[int] = set()
+        
         self.final_violation_count = 0
         self.final_floating_brick_count = 0
         self.final_required_repair_cluster_count = 0
@@ -77,6 +79,25 @@ class OptimisationStatistics:
         self.initial_required_repair_cluster_count = sum(1 for _, _, required_repair in cluster_audit_results if required_repair)
         self.structurally_sound_weak_brick_ids = (self._get_structurally_sound_weak_brick_ids(cluster_audit_results))
         self.structurally_sound_weak_brick_count = len(self.structurally_sound_weak_brick_ids)
+        
+    def record_final_basic_audit(self, violations: list) -> None:
+        self.final_violation_brick_ids = {violation.brick_id for violation in violations}
+        
+        self.final_violation_count = len(self.final_violation_brick_ids)
+        
+        self.final_floating_brick_count = len({violation.brick_id for violation in violations if violation.supported_footprint_coordinates_count == 0})
+        
+        resolved_violation_brick_ids = self.initial_violation_brick_ids - self.final_violation_brick_ids
+        
+        new_violation_brick_ids = self.final_violation_brick_ids - self.initial_violation_brick_ids
+        
+        self.resolved_violation_count = len(resolved_violation_brick_ids)
+        
+        self.new_violation_count = len(new_violation_brick_ids)
+        
+    def record_final_cluster_audit(self, cluster_repair_results: list[tuple]) -> None:
+        self.final_required_repair_cluster_count = sum(1 for _, required_repair in cluster_repair_results if required_repair)
+        self.unresolved_cluster_count = self.final_required_repair_cluster_count
     
     def _get_structurally_sound_weak_brick_ids(self, cluster_audit_result: list[tuple]) -> set[int]:
         
@@ -158,3 +179,22 @@ class OptimisationStatistics:
         print("Replacments - That Improved Support: " + str(self.support_improving_replacement_count))
         print("Replacements - That Improved Grounded-Attachment: " + str(self.grounded_attachment_replacement_count))
         print("Unresolved Repair-Required Clusters: " + str(self.unresolved_cluster_count))
+        
+    def print_final_audit_summary(self) -> None:
+        
+        print("\nFINAL OPTIMISATION STRUCTURAL AUDIT")
+        print("-------------------------------------")
+        
+        print("Initial Violating Brick Count: " + str(self.initial_violation_count))
+        print("Final Violating Brick Count: " + str(self.final_violation_count))
+        
+        print("Resolved Initial Violations: " + str(self.resolved_violation_count))
+        print("New Violations Introduced: " + str(self.new_violation_count))
+        
+        print("Initial Floating Brick Count: " + str(self.initial_floating_brick_count))
+        print("Final Floating Brick Count: " + str(self.final_floating_brick_count))
+        
+        print("Initial Required Repair Clusters: " + str(self.initial_required_repair_cluster_count))
+        print("Final Required Repair Clusters: " + str(self.final_required_repair_cluster_count))
+        
+        print("Unresolved Clusters: " + str(self.unresolved_cluster_count))

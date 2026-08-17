@@ -43,12 +43,14 @@ MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 16
+RESOLUTION: int = 8
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
 
-MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = 2
+IS_MODEL_UPSIDE_DOWN: bool = False
+
+MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION/16)
 # Sofas need a support ratio of 0.25
 
 # Stage 1
@@ -63,6 +65,10 @@ def create_model_result_grid() -> np.ndarray:
     result_grid = ResultGrid()
     
     result_grid.create_result_grid(voxel_grid)
+    
+    # Temporary Testing Thing
+    if IS_MODEL_UPSIDE_DOWN:    
+        result_grid.result_grid = np.flip(result_grid.result_grid, axis=0)
     
     return result_grid.result_grid
 
@@ -190,6 +196,7 @@ def main(minimum_support_ratio: float) -> None:
     # Stage 2A - Optimisation FINALLE!!!
     basic_optimisation_statistics = run_optimisation(basic_finished_structure, brick_vocabulary, minimum_support_ratio, MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED)
     basic_optimisation_statistics.print_replacement_repair_summary()
+    basic_optimisation_statistics.print_final_audit_summary()
     
     # Stage 5 - specific checking for bottle at resolution 32
     if basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES:

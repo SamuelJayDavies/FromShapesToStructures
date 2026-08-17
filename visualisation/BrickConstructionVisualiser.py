@@ -8,7 +8,13 @@ class BrickConstructionVisualiser:
     EMPTY_VOXEL_VALUE: int = -1
     GOLDEN_RATIO_VALUE: float = 0.618033988749895
     
-    def __init__(self, finished_grid: np.ndarray) -> None:
+    PARTIALLY_SUPPORTED: str = "partially_supported"
+    FLOATING: str = "floating"
+    
+    PARTIALLY_SUPPORTED_COLOUR: tuple[float, float, float] = (1.0, 0.8, 0.0)
+    FLOATING_COLOUR: tuple[float, float, float] = (1.0, 0.0, 0.0)
+    
+    def __init__(self, finished_grid: np.ndarray, brick_statuses: dict[int, str] | None = None) -> None:
         
         if np.any(finished_grid < self.EMPTY_VOXEL_VALUE):
             raise ValueError("Finished grid cannot contain values below -1")
@@ -22,6 +28,20 @@ class BrickConstructionVisualiser:
         for brick_id in unique_bricks:
             if brick_id != self.EMPTY_VOXEL_VALUE:
                 self.brick_ids.append(brick_id)
+                
+        if brick_statuses is None:
+            brick_statuses = {}
+        
+        valid_statuses = {self.PARTIALLY_SUPPORTED, self.FLOATING}
+        
+        for brick_id, status in brick_statuses.items():
+            if brick_id not in self.brick_ids:
+                raise ValueError("Brick Id not found in finished grid")
+            
+            if status not in valid_statuses:
+                raise ValueError("Status is not partially supported or floating")
+        
+        self.brick_statuses = brick_statuses.copy()
         
     def _get_unqiue_brick_colour(self, brick_id: int) -> tuple[float, float, float]:
         
@@ -29,6 +49,16 @@ class BrickConstructionVisualiser:
         hue = (brick_id * self.GOLDEN_RATIO_VALUE) % 1.0
         
         return colorsys.hsv_to_rgb(hue, 0.6, 0.9)
+    
+    def _get_brick_colour(self, brick_id: int) -> tuple[float, float, float]:
+        brick_status = self.brick_statuses.get(brick_id)
+        
+        if brick_status == self.FLOATING:
+            return self.FLOATING_COLOUR
+        elif brick_status == self.PARTIALLY_SUPPORTED:
+            return self.PARTIALLY_SUPPORTED_COLOUR
+        else:
+            return self._get_unqiue_brick_colour(brick_id)
     
     def _create_brick_mesh(self, brick_id: int) -> o3d.geometry.TriangleMesh:
         
@@ -50,7 +80,7 @@ class BrickConstructionVisualiser:
         
         brick_triangle_mesh.translate((float(lowest_x), float(lowest_y), float(lowest_z)))
         
-        brick_triangle_mesh.paint_uniform_color(self._get_unqiue_brick_colour(brick_id))
+        brick_triangle_mesh.paint_uniform_color(self._get_brick_colour(brick_id))
         
         brick_triangle_mesh.compute_vertex_normals()
         

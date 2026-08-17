@@ -23,7 +23,7 @@ class Brick:
         
         for param in integer_parameters:
             if param < 0:
-                raise ValueError(param + " must be a non-negative integer.")
+                raise ValueError(str(param) + " must be a non-negative integer.")
 
         if len(orientation) != 2:
             raise ValueError("Orientation must contain 2 dimensions exactly")

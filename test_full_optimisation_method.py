@@ -39,7 +39,10 @@ from optimisation_controller.ReplacementCandidateEvaluator import ReplacementCan
 from optimisation_controller.StructuralRepairController import StructuralRepairController
 from optimisation_controller.OptimisationStatistics import OptimisationStatistics
 
-MODEL_CLASS: str = "mug"
+# Stage 3A - Improving Visualisations
+from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
+
+MODEL_CLASS: str = "chair"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
@@ -49,6 +52,7 @@ MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
 
 IS_MODEL_UPSIDE_DOWN: bool = False
+VISUALISE_VIOLATIONS: bool = True
 
 MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION/16)
 # Sofas need a support ratio of 0.25
@@ -203,15 +207,30 @@ def main(minimum_support_ratio: float) -> None:
         print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
                 
     # Stage 4
-    visualise_results(basic_finished_structure.finished_grid)
+    visualise_results(basic_finished_structure.finished_grid, basic_violations)
     
     #visualise_results(informed_finished_structure.finished_grid)
 
             
-def visualise_results(finished_grid: np.ndarray) -> None:
-    visualiser = BrickConstructionVisualiser(finished_grid)
+def visualise_results(finished_grid: np.ndarray, violations: list[StructuralViolation] | None) -> None:
+    if VISUALISE_VIOLATIONS:
+        brick_statuses = create_support_visualisation_statuses(violations)
+        
+    visualiser = BrickConstructionVisualiser(finished_grid, brick_statuses)
     
     visualiser.visualise_complete_model()
+
+def create_support_visualisation_statuses(violations: list[StructuralViolation]) -> dict[int, str]:
+    brick_statuses: dict[int, str] = {}
+    
+    for violation in violations:
+        
+        if violation.supported_footprint_coordinates_count == 0:
+            brick_statuses[violation.brick_id] = BrickConstructionVisualiser.FLOATING
+        else:
+            brick_statuses[violation.brick_id] = BrickConstructionVisualiser.PARTIALLY_SUPPORTED
+        
+    return brick_statuses
     
 # Stage 5 - checking why models failed
 def print_blocked_layer_diagnostics(

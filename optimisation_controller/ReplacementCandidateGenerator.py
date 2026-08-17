@@ -140,6 +140,9 @@ class ReplacementCandidateGenerator:
             
             candidate_origins = self.get_candidate_origins(target_violation, candidate_orientation)
             
+            if any(coordinate < 0 for origin in candidate_origins for coordinate in origin):
+                continue
+            
             for candidate_origin in candidate_origins:
                 
                 candidate = self.create_replacement_candidate(brick_type, candidate_orientation, candidate_origin)

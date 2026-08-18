@@ -11,6 +11,8 @@ from optimisation_controller.OptimisationStatistics import OptimisationStatistic
 
 import numpy as np
 
+import copy
+
 from brick.Brick import Brick
 
 class StructuralRepairController:
@@ -192,3 +194,75 @@ class StructuralRepairController:
                 cluster_repair_results.append((cluster, required_repair))
                 
             self.optimisation_statistics.record_final_cluster_audit(cluster_repair_results)
+            
+    def attempt_merge_repair(self, cluster: ViolationCluster) -> bool:
+        
+        priority_target = self.repair_selector.get_repair_target(cluster)
+        
+        ordered_target_violations = [priority_target]
+        
+        for violation in cluster.violations:
+            if violation.brick_id != priority_target.brick_id:
+                ordered_target_violations.append(violation)
+                
+        merge_evaluations: list[tuple[Brick, int, int, float, float, int]] = []
+        
+        for target_violation in ordered_target_violations:
+            
+            merge_candidates = (self.replacement_candidate_generator.generate_merge_candidates(self.construction_grid, target_violation))
+            
+            if not merge_candidates:
+                continue
+            
+            target_evaluations = (self.replacement_candidate_evaluator.evaluate_all_merge_candidates(merge_candidates, target_violation, cluster))
+            
+            merge_evaluations.extend(target_evaluations)
+        
+        if not merge_evaluations:
+            return False
+        
+        best_merge = self.replacement_candidate_evaluator.select_best_merge_candidate(merge_evaluations)
+        
+        if best_merge is None:
+            return False
+        
+        merged_brick, target_brick_id, neighbour_brick_id, _, _, _ = best_merge
+        
+        self.construction_grid.merge_bricks(target_brick_id, neighbour_brick_id, merged_brick)
+        
+        return True
+    
+    def repair_with_merging(self, maximum_iterations: int = 100) -> bool:
+        
+        merge_iteration = 0
+        
+        unresolved_cluster_ids: set[tuple[int, ...]] = set()
+        
+        while merge_iteration < maximum_iterations:
+            
+            required_repair_clusters = self.get_required_repair_clusters()
+            
+            if not required_repair_clusters:
+                return True
+            
+            current_required_cluster_ids = {self._get_cluster_unique_id(cluster) for cluster in required_repair_clusters}
+            
+            unresolved_cluster_ids.intersection_update(current_required_cluster_ids)
+            
+            repairable_clusters = [cluster for cluster in required_repair_clusters if self._get_cluster_unique_id(cluster) not in unresolved_cluster_ids]
+            
+            if not repairable_clusters:
+                return False
+            
+            current_cluster = repairable_clusters[0]
+            
+            current_cluster_id = self._get_cluster_unique_id(current_cluster)
+            
+            successful_merge = self.attempt_merge_repair(current_cluster)
+            
+            merge_iteration += 1
+            
+            if not successful_merge:
+                unresolved_cluster_ids.add(current_cluster_id)
+                
+        raise RuntimeError("Maximum merge repair iterations exceeded")

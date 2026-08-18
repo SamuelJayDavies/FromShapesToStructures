@@ -17,7 +17,13 @@ class StructuralViolationDetector:
             
     def _get_ordered_placed_bricks(self, construction_grid: ConstructionGrid) -> list[tuple[int, Brick]]:
         
-        ordered_bricks = list(enumerate(construction_grid.placed_bricks))
+        ordered_bricks: list[tuple[int, Brick]] = []
+        
+        # Because bricks can now be retired (from the merge process), the structural violation detector cannot be allowed to re-query them
+        for brick_id in construction_grid.get_active_brick_ids():
+            brick = construction_grid.placed_bricks[brick_id]
+            ordered_bricks.append((brick_id, brick))
+        
         # Need brick id as the last tie-breaker 
         ordered_bricks.sort(key=lambda ordered_brick: (ordered_brick[1].y, ordered_brick[1].z, ordered_brick[1].x, ordered_brick[0]))
         

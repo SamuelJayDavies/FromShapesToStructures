@@ -127,11 +127,40 @@ def run_optimisation(finished_structure: HeuristicResult, brick_vocab: Brick_voc
     
     repair_controller = StructuralRepairController(construction_grid, violation_detector, violation_grouper, repair_evaluator, repair_selector, replacement_candidate_generator, replacement_candidate_evaluator, optimisation_statistics)
     
-    suceessful_repair = repair_controller.repair_with_replacement()
+    successful_replacement_repair = repair_controller.repair_with_replacement()
     
-    print("Replacement Repair Results")
-    print("==========================")
-    print("Replacement repair sucessful" + str(suceessful_repair))
+    successful_merge_repair = (
+    repair_controller.repair_with_merging()
+)
+
+    print(
+        "Replacement phase successful:",
+        successful_replacement_repair
+    )
+
+    print(
+        "Merge phase successful:",
+        successful_merge_repair
+    )
+
+    print(
+        "Active bricks after merging:",
+        construction_grid.get_active_brick_count()
+    )
+
+    remaining_repair_clusters = (
+        repair_controller.get_required_repair_clusters()
+    )
+
+    print(
+        "Repair-required clusters after merging:",
+        len(remaining_repair_clusters)
+    )
+
+    print(
+        "Retired brick IDs:",
+        construction_grid.retired_brick_ids
+    )
     
     return optimisation_statistics
     

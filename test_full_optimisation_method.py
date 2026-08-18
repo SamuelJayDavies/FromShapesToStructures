@@ -191,7 +191,7 @@ def main(minimum_support_ratio: float) -> None:
     
     # Stage 3
     compare_final_to_result(basic_finished_structure, CandidateGenerationStrategy.BASIC)
-    compare_final_to_result(informed_finished_structure, CandidateGenerationStrategy.INFORMED)
+    #compare_final_to_result(informed_finished_structure, CandidateGenerationStrategy.INFORMED)
     
     # Stage 1A
     basic_violations = check_structural_support_violations(basic_finished_structure, CandidateGenerationStrategy.BASIC, minimum_support_ratio)

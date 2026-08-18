@@ -27,6 +27,7 @@ class ConstructionGrid:
         )
 
         self.placed_bricks = []
+        self.retired_brick_ids: set[int] = set()
 
         # Currently at least half of the bricks below a newly placed brick need to be occupied for a ratio of 0.5
         # This works as a baseline configuration and no assumed universal physical law so it won't be mentioned like that in the diss
@@ -511,6 +512,64 @@ class ConstructionGrid:
             replacement_y, replacement_z_start, replacement_z_end, replacement_x_start, replacement_x_end = self.get_brick_bounds(replacement_brick)
             
             self.current_grid[replacement_y, replacement_z_start:replacement_z_end, replacement_x_start:replacement_x_end] = target_brick_id
+            
+    def merge_bricks(self, target_brick_id: int, neighbour_brick_id: int, merged_brick: Brick) -> None:
+        
+        if target_brick_id == neighbour_brick_id:
+            raise ValueError("A merge requires two different brick ids")
+        elif not self.is_active_brick_id(target_brick_id):
+            raise ValueError("Target brick ID is not active")
+        elif not self.is_active_brick_id(neighbour_brick_id):
+            raise ValueError("Neighbour brick ID is not active")
+        elif merged_brick.is_placed():
+            raise ValueError("Cannot merge using a brick that has already been placed")
+        elif not self.validate_brick_in_bounds(merged_brick):
+            raise ValueError("Merged brick cannot be placed outside of the construction grid")
+        else:
+            
+            target_brick = self.placed_bricks[target_brick_id]
+            neighbour_brick = self.placed_bricks[neighbour_brick_id]
+            
+            target_coordinates = set(self.get_brick_footprint_coordinates(target_brick))
+            neighbour_coordinates = set(self.get_brick_footprint_coordinates(neighbour_brick))
+            merged_coordinates = set(self.get_brick_footprint_coordinates(merged_brick))
+            
+            original_combined_coordinates = target_coordinates | neighbour_coordinates
+            
+            if original_combined_coordinates != merged_coordinates:
+                raise ValueError("Merged brick area does not match the targetr and neighbour joint area")
+            
+            merged_region = self.get_grid_region(merged_brick)
+            
+            occupied_brick_ids = {int(brick_id) for brick_id in np.unique(merged_region) if brick_id != -1}
+            allowed_brick_ids = {target_brick_id, neighbour_brick_id}
+            
+            if not occupied_brick_ids.issubset(allowed_brick_ids):
+                raise ValueError("Merged brick conflicts with an outside brick (not target or chosen neighbour)")
+            
+            for y, z, x in original_combined_coordinates:
+                self.current_grid[y, z, x] = -1
+                
+            merged_brick.place_brick(target_brick_id)
+            
+            self.placed_bricks[target_brick_id] = merged_brick
+            
+            self.retired_brick_ids.add(neighbour_brick_id)
+            
+            for y, z, x in merged_coordinates:
+                self.current_grid[y, z, x] = target_brick_id
+            
+    def is_active_brick_id(self, brick_id: int) -> bool:
+        
+        return (0 <= brick_id < len(self.placed_bricks) and brick_id not in self.retired_brick_ids)
+    
+    def get_active_brick_ids(self) -> tuple[int, ...]:
+        
+        return tuple(brick_id for brick_id in range(len(self.placed_bricks)) if brick_id not in self.retired_brick_ids)
+    
+    def get_active_brick_count(self) -> int:
+        
+        return len(self.placed_bricks) - len(self.retired_brick_ids)
         
         
         

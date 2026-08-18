@@ -9,6 +9,8 @@ from optimisation_controller.ReplacementCandidateEvaluator import ReplacementCan
 
 from optimisation_controller.OptimisationStatistics import OptimisationStatistics
 
+import numpy as np
+
 from brick.Brick import Brick
 
 class StructuralRepairController:
@@ -58,47 +60,6 @@ class StructuralRepairController:
         self.optimisation_statistics.record_replacement_attempt()
         
         target_violation = self.repair_selector.get_repair_target(cluster)
-        
-        merge_candidates = (
-            self.replacement_candidate_generator.generate_merge_candidates(
-                self.construction_grid,
-                target_violation
-            )
-        )
-
-        merge_evaluations = (
-            self.replacement_candidate_evaluator.evaluate_all_merge_candidates(
-                merge_candidates=merge_candidates,
-                target_violation=target_violation,
-                cluster=cluster
-            )
-        )
-
-        for evaluation in merge_evaluations:
-            
-            (
-                candidate,
-                target_brick_id,
-                neighbour_brick_id,
-                merged_support_ratio,
-                target_support_gain,
-                attachment_count
-            ) = evaluation
-            
-            print(
-                "Merge:",
-                target_brick_id,
-                "+",
-                neighbour_brick_id,
-                "→",
-                candidate.brickType.name,
-                "| Merged Support:",
-                round(merged_support_ratio, 3),
-                "| Target Gain:",
-                round(target_support_gain, 3),
-                "| Grounded Attachments:",
-                attachment_count
-            )
                     
         replacement_candidates = self.replacement_candidate_generator.generate_replacement_candidates(target_violation)
         

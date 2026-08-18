@@ -3,6 +3,8 @@ from brick.BrickType import BrickType
 from optimisation_controller.StructuralViolation import StructuralViolation
 from brick.Brick import Brick
 
+from brick_placement.ConstructionGrid import ConstructionGrid
+
 class ReplacementCandidateGenerator:
     
     def __init__(self, brick_vocabulary: Brick_vocabulary) -> None:
@@ -140,13 +142,158 @@ class ReplacementCandidateGenerator:
             
             candidate_origins = self.get_candidate_origins(target_violation, candidate_orientation)
             
-            if any(coordinate < 0 for origin in candidate_origins for coordinate in origin):
-                continue
-            
             for candidate_origin in candidate_origins:
+                
+                if any(coordinate < 0 for coordinate in candidate_origin):
+                    continue
                 
                 candidate = self.create_replacement_candidate(brick_type, candidate_orientation, candidate_origin)
                 
                 replacement_candidates.append(candidate)
         
         return replacement_candidates
+    
+    def get_target_brick(self, construction_grid: ConstructionGrid, target_violation: StructuralViolation) -> Brick:
+        
+        target_brick_id = target_violation.brick_id
+        
+        if (target_brick_id < 0 or target_brick_id >= len(construction_grid.placed_bricks)):
+            raise ValueError("Target violation has an non-existent brick Id")
+        else:
+            return construction_grid.placed_bricks[target_brick_id]
+        
+    def get_directly_adjacent_brick_ids(self, construction_grid: ConstructionGrid, target_violation: StructuralViolation) -> list[int]:
+        
+        target_brick = self.get_target_brick(construction_grid, target_violation)
+        
+        target_brick_id = target_violation.brick_id
+        
+        target_coordinates = construction_grid.get_brick_footprint_coordinates(target_brick)
+        
+        neighbour_shifts = ( (-1, 0), (1, 0), (0, -1), (0, 1))
+        
+        adjacent_brick_ids: set[int] = set()
+        
+        _, size_z, size_x = construction_grid.result_shape
+        
+        for y, z, x in target_coordinates:
+            
+            for z_shift, x_shift in neighbour_shifts:
+                
+                neighbour_z = z + z_shift
+                neighbour_x = x + x_shift
+                
+                if not (0 <= neighbour_z < size_z and 0 <= neighbour_x < size_x):
+                    continue
+                
+                neighbour_brick_id = int(construction_grid.current_grid[y, neighbour_z, neighbour_x])
+                
+                if (neighbour_brick_id != -1 and neighbour_brick_id != target_brick_id):
+                    adjacent_brick_ids.add(neighbour_brick_id)
+                    
+        return sorted(adjacent_brick_ids)
+    
+    def get_combined_merge_footprint(self, construction_grid: ConstructionGrid, target_violation: StructuralViolation, neighbour_brick_id: int) -> set[tuple[int, int, int]]:
+        
+        target_brick = self.get_target_brick(construction_grid, target_violation)
+        
+        neighbour_brick = construction_grid.placed_bricks[neighbour_brick_id]
+        
+        if neighbour_brick.y != target_brick.y:
+            raise ValueError("Merge neighbour must be on teh same y-layer")
+        else:
+            target_coordinates = set(construction_grid.get_brick_footprint_coordinates(target_brick))
+            neighbour_coordinates = set(construction_grid.get_brick_footprint_coordinates(neighbour_brick))
+            
+            return target_coordinates | neighbour_coordinates
+        
+    def get_rectangular_merge_bounds(self, combined_coordinates: set[tuple[int, int, int]]) -> tuple[int, int, int, int, int] | None:
+        
+        if not combined_coordinates:
+            return None
+        else:
+            y_coordinates = {coordinate[0] for coordinate in combined_coordinates}
+            
+            if len(y_coordinates) != 1:
+                return None
+            
+            y = next(iter(y_coordinates))
+            
+            z_coordinates = [coordinate[1] for coordinate in combined_coordinates]
+            x_coordinates = [coordinate[2] for coordinate in combined_coordinates]
+            
+            min_z = min(z_coordinates)
+            max_z = max(z_coordinates)
+            
+            min_x = min(x_coordinates)
+            max_x = max(x_coordinates)
+            
+            expected_coordinates: set[tuple[int, int, int]] = set()
+            
+            for z in range(min_z, max_z + 1):
+                for x in range(min_x, max_x + 1):
+                    expected_coordinates.add((y, z, x))
+            
+            if combined_coordinates != expected_coordinates:
+                return None
+            else:
+                return (y, min_z, max_z, min_x, max_x)
+            
+    def get_merge_brick_options(self, combined_coordinates: set[tuple[int, int, int]]) -> list[tuple[BrickType, tuple[int, int], tuple[int, int, int]]]:
+        
+        merge_bounds = self.get_rectangular_merge_bounds(combined_coordinates)
+        
+        if merge_bounds is None:
+            return []
+        
+        y, min_z, max_z, min_x, max_x = merge_bounds
+        
+        required_size_z = max_z - min_z + 1
+        required_size_x = max_x - min_x + 1
+        
+        merge_origins = (y, min_z, min_x)
+        
+        merge_options: list[tuple[BrickType, tuple[int, int], tuple[int, int, int]]] = []
+        
+        for brick_type in self.brick_vocabulary:
+            
+            seen_orientations: set[tuple[int, int]] = set()
+            
+            for orientation in brick_type.orientations():
+                
+                if orientation not in seen_orientations:
+                    seen_orientations.add(orientation)
+                    
+                    candidate_size_z = orientation[1]
+                    candidate_size_x = orientation[0]
+                    
+                    if (candidate_size_z == required_size_z and candidate_size_x == required_size_x):
+                        merge_options.append((brick_type, orientation, merge_origins))
+        
+        merge_options.sort(key=lambda option: (option[1][0] * option[1][1], option[1][0], option[1][1], option[0].name))
+        
+        return merge_options
+    
+    def generate_merge_candidates(self, construction_grid: ConstructionGrid, target_violation: StructuralViolation) -> list[tuple[Brick, int, int]]:
+        
+        merge_candidates: list[tuple[Brick, int, int]] = []
+        
+        target_brick_id = target_violation.brick_id
+        
+        adjacent_brick_ids = self.get_directly_adjacent_brick_ids(construction_grid, target_violation)
+        
+        for neighbour_brick_id in adjacent_brick_ids:
+            
+            combined_coordinates = self.get_combined_merge_footprint(construction_grid, target_violation, neighbour_brick_id) 
+            
+            merge_options = self.get_merge_brick_options(combined_coordinates)
+            
+            for brick_type, orientation, origin in merge_options:
+                
+                candidate = self.create_replacement_candidate(brick_type, orientation, origin)
+                
+                merge_candidates.append((candidate, target_brick_id, neighbour_brick_id))
+                
+        return merge_candidates
+    
+    

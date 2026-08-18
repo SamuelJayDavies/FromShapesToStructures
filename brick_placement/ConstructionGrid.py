@@ -80,13 +80,13 @@ class ConstructionGrid:
         size_y, size_z, size_x = self.result_shape
         y, z_start, z_end, x_start, x_end = self.get_brick_bounds(brick)
         if y < 0 or y >= size_y:
-            print("Y coordinate is not within the bounds of the result grid.")
+            #print("Y coordinate is not within the bounds of the result grid.")
             return False
         if z_start < 0 or z_end > size_z:
-            print("Z coordinates are not within the bounds of the result grid.")
+            #print("Z coordinates are not within the bounds of the result grid.")
             return False
         if x_start < 0 or x_end > size_x:
-            print("X coordinates are not within the bounds of the result grid.")
+            #print("X coordinates are not within the bounds of the result grid.")
             return False
         return True
 

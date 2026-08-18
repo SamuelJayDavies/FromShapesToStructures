@@ -42,11 +42,11 @@ from optimisation_controller.OptimisationStatistics import OptimisationStatistic
 # Stage 3A - Improving Visualisations
 from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
 
-MODEL_CLASS: str = "mug"
+MODEL_CLASS: str = "chair"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 8
+RESOLUTION: int = 16
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
@@ -55,6 +55,8 @@ IS_MODEL_UPSIDE_DOWN: bool = False
 VISUALISE_VIOLATIONS: bool = True
 
 MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION/16)
+BUILDING_BRICK_VOCAB = BASIC_BRICK_VOCABULARY
+REPLACEMENT_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
 # Sofas need a support ratio of 0.25
 
 # Stage 1
@@ -118,7 +120,7 @@ def run_optimisation(finished_structure: HeuristicResult, brick_vocab: Brick_voc
     
     repair_selector = StructuralRepairSelector(distance_evaluator)
     
-    replacement_candidate_generator = ReplacementCandidateGenerator(brick_vocab)
+    replacement_candidate_generator = ReplacementCandidateGenerator(REPLACEMENT_BRICK_VOCAB)
     replacement_candidate_evaluator = ReplacementCandidateEvaluator(construction_grid)
     
     optimisation_statistics = OptimisationStatistics()
@@ -173,7 +175,7 @@ def main(minimum_support_ratio: float) -> None:
     visualise_result_grid(result_grid)
     
     # Stage 2
-    brick_vocabulary = BASIC_BRICK_VOCABULARY
+    brick_vocabulary = BUILDING_BRICK_VOCAB
     
     basic_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.BASIC, minimum_support_ratio)
     informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
@@ -219,7 +221,6 @@ def visualise_results(finished_grid: np.ndarray, violations: list[StructuralViol
     visualiser = BrickConstructionVisualiser(finished_grid, brick_statuses)
     
     visualiser.visualise_complete_model()
-    visualiser.visualise_layer_by_layer()
 
 def create_support_visualisation_statuses(violations: list[StructuralViolation]) -> dict[int, str]:
     brick_statuses: dict[int, str] = {}

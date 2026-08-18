@@ -21,11 +21,12 @@ from brick_placement.PlacementResult import PlacementResult
 # Stage 4 Visualising the final result
 from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
 
-MODEL_CLASS: str = "bottle"
+MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 32
+RESOLUTION: int = 16
+BRICK_VOCAB = BASIC_BRICK_VOCABULARY
 
 MINIMUM_SUPPORT_RATIO = 0.5
 # Sofas need a support ratio of 0.25
@@ -112,7 +113,7 @@ def main(minimum_support_ratio: float) -> None:
     visualise_result_grid(result_grid)
     
     # Stage 2
-    brick_vocabulary = BASIC_BRICK_VOCABULARY
+    brick_vocabulary = BRICK_VOCAB
     
     basic_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.BASIC, minimum_support_ratio)
     informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)

@@ -157,3 +157,24 @@ ADVANCED_BRICK_VOCABULARY = Brick_vocabulary(
         BrickType(name="8x8", x_length=8, z_length=8)
     ]
 )
+
+# These are all real confirmed lego bricks
+ACCURATE_LEGO_VOCABULARY = Brick_vocabulary(
+    bricks=[
+        BrickType(name="1x1", x_length=1, z_length=1),
+        BrickType(name="1x2", x_length=1, z_length=2),
+        BrickType(name="1x3", x_length=1, z_length=3),
+        BrickType(name="1x4", x_length=1, z_length=4),
+        BrickType(name="1x6", x_length=1, z_length=6),
+        BrickType(name="1x8", x_length=1, z_length=8),
+        BrickType(name="2x2", x_length=2, z_length=2),
+        BrickType(name="2x3", x_length=2, z_length=3),
+        BrickType(name="2x4", x_length=2, z_length=4),
+        BrickType(name="2x6", x_length=2, z_length=6),
+        BrickType(name="2x8", x_length=2, z_length=8),
+        BrickType(name="3x3", x_length=3, z_length=3),
+        BrickType(name="4x4", x_length=4, z_length=4),
+        BrickType(name="4x6", x_length=4, z_length=6),
+        BrickType(name="6x8", x_length=6, z_length=8),
+    ]
+)

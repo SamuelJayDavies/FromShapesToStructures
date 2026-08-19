@@ -42,6 +42,9 @@ from optimisation_controller.OptimisationStatistics import OptimisationStatistic
 # Stage 3A - Improving Visualisations
 from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
 
+import time
+from evaluation.EvaluationStatistics import EvaluationStatistics
+
 MODEL_CLASS: str = "chair"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
@@ -129,9 +132,7 @@ def run_optimisation(finished_structure: HeuristicResult, brick_vocab: Brick_voc
     
     successful_replacement_repair = repair_controller.repair_with_replacement()
     
-    successful_merge_repair = (
-    repair_controller.repair_with_merging()
-)
+    successful_merge_repair = repair_controller.repair_with_merging()
 
     print(
         "Replacement phase successful:",
@@ -206,17 +207,23 @@ def main(minimum_support_ratio: float) -> None:
     # Stage 2
     brick_vocabulary = BUILDING_BRICK_VOCAB
     
+    start_pre_optimisation_time = time.perf_counter()
+    
     basic_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.BASIC, minimum_support_ratio)
-    informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
+    #informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
+    
+    end_pre_optimisation_time = time.perf_counter()
+    
+    pre_optimisation_time = end_pre_optimisation_time - start_pre_optimisation_time
 
     print("\nResults for basic heuristic pipeline")
     print("=======================================")
     print("Final status " + basic_finished_structure.final_status)
     
-    print("\nResults for informed heuristic pipeline")
-    print("=======================================")
-    print("Final status " + informed_finished_structure.final_status)
-    print("Support Ratio: " + str(minimum_support_ratio))
+    #print("\nResults for informed heuristic pipeline")
+    #print("=======================================")
+    #print("Final status " + informed_finished_structure.final_status)
+    #print("Support Ratio: " + str(minimum_support_ratio))
     
     # Stage 3
     compare_final_to_result(basic_finished_structure, CandidateGenerationStrategy.BASIC)
@@ -224,12 +231,28 @@ def main(minimum_support_ratio: float) -> None:
     
     # Stage 1A
     basic_violations = check_structural_support_violations(basic_finished_structure, CandidateGenerationStrategy.BASIC, minimum_support_ratio)
-    informed_violations = check_structural_support_violations(informed_finished_structure, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
+    #informed_violations = check_structural_support_violations(informed_finished_structure, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
     
     generate_violation_clusters(basic_violations)
     
-    # Stage 2A - Optimisation FINALLE!!!
+    # Stage 2A - Optimisation FINALLE!!
+    start_time = time.perf_counter()
     basic_optimisation_statistics = run_optimisation(basic_finished_structure, brick_vocabulary, minimum_support_ratio, MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED)
+    
+    end_time = time.perf_counter()
+    
+    optimisation_time = (end_time - start_time) + pre_optimisation_time
+    
+    
+    
+    evaluation_metrics = EvaluationStatistics(basic_finished_structure.construction_grid, StructuralViolationDetector(minimum_support_ratio))
+    
+    evaluation_metrics.evaluate(optimisation_time)
+    evaluation_metrics.print_summary()
+    
+    
+    
+    
     basic_optimisation_statistics.print_replacement_repair_summary()
     basic_optimisation_statistics.print_final_audit_summary()
     

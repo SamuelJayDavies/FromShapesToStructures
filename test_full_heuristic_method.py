@@ -21,6 +21,10 @@ from brick_placement.PlacementResult import PlacementResult
 # Stage 4 Visualising the final result
 from visualisation.BrickConstructionVisualiser import BrickConstructionVisualiser
 
+import time
+from evaluation.EvaluationStatistics import EvaluationStatistics
+from optimisation_controller.StructuralViolationDetector import StructuralViolationDetector
+
 MODEL_CLASS: str = "mug"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
@@ -115,28 +119,42 @@ def main(minimum_support_ratio: float) -> None:
     # Stage 2
     brick_vocabulary = BRICK_VOCAB
     
+    start_time = time.perf_counter()
+    
     basic_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.BASIC, minimum_support_ratio)
-    informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
+    #informed_finished_structure = run_heuristic(result_grid, brick_vocabulary, CandidateGenerationStrategy.INFORMED, minimum_support_ratio)
+    
+    end_time = time.perf_counter()
+    
+    heuristic_runtime = end_time - start_time
+    
+    evaluation_metrics = EvaluationStatistics(basic_finished_structure.construction_grid, StructuralViolationDetector(minimum_support_ratio))
+        
+    evaluation_metrics.evaluate(heuristic_runtime)
+    evaluation_metrics.print_summary()
+        
 
     print("\nResults for basic heuristic pipeline")
     print("=======================================")
     print("Final status " + basic_finished_structure.final_status)
     
-    print("\nResults for informed heuristic pipeline")
-    print("=======================================")
-    print("Final status " + informed_finished_structure.final_status)
-    print("Support Ratio: " + str(minimum_support_ratio))
+    #print("\nResults for informed heuristic pipeline")
+    #print("=======================================")
+    #print("Final status " + informed_finished_structure.final_status)
+    #print("Support Ratio: " + str(minimum_support_ratio))
     
     # Stage 3
     compare_final_to_result(basic_finished_structure, CandidateGenerationStrategy.BASIC)
-    compare_final_to_result(informed_finished_structure, CandidateGenerationStrategy.INFORMED)
+    #compare_final_to_result(informed_finished_structure, CandidateGenerationStrategy.INFORMED)
     
+    """
     if (basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES and informed_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES):
         minimum_support_ratio -= 0.05
         if (minimum_support_ratio >= 0):
             return main(minimum_support_ratio) # CHANGE THIS FROM RETURN TO JUST MAIN(minimum_SUPPORT_RATIO) to GET THE EXAMPLE WITH TEH SOFA HAVING A GAP IN THE MIDDLE
         else:
             print("Runtime Has Concluded!")
+    """
     
     # Stage 5 - specific checking for bottle at resolution 32
     if basic_finished_structure.final_status == PlacementResult.STATUS_NO_VALID_CANDIDATES:

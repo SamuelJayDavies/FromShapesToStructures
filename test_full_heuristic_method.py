@@ -25,12 +25,14 @@ import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 from optimisation_controller.StructuralViolationDetector import StructuralViolationDetector
 
-MODEL_CLASS: str = "mug"
+MODEL_CLASS: str = "airplane"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 16
-BRICK_VOCAB = BASIC_BRICK_VOCABULARY
+RESOLUTION: int = 32
+BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
+
+IS_MODEL_UPSIDE_DOWN = False
 
 MINIMUM_SUPPORT_RATIO = 0.5
 # Sofas need a support ratio of 0.25
@@ -47,6 +49,9 @@ def create_model_result_grid() -> np.ndarray:
     result_grid = ResultGrid()
     
     result_grid.create_result_grid(voxel_grid)
+    
+    if IS_MODEL_UPSIDE_DOWN:    
+        result_grid.result_grid = np.flip(result_grid.result_grid, axis=0)
     
     return result_grid.result_grid
 

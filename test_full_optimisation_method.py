@@ -45,11 +45,11 @@ from visualisation.BrickConstructionVisualiser import BrickConstructionVisualise
 import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 
-MODEL_CLASS: str = "chair"
+MODEL_CLASS: str = "airplane"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
-RESOLUTION: int = 16
+RESOLUTION: int = 64
 
 MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
@@ -58,7 +58,7 @@ IS_MODEL_UPSIDE_DOWN: bool = False
 VISUALISE_VIOLATIONS: bool = True
 
 MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION/16)
-BUILDING_BRICK_VOCAB = BASIC_BRICK_VOCABULARY
+BUILDING_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
 REPLACEMENT_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
 # Sofas need a support ratio of 0.25
 

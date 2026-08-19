@@ -101,7 +101,7 @@ class EvaluationStatistics:
         if total_runtime_seconds == 0:
             self.covered_voxels_per_second = 0.0
         else:
-            self.covered_voxels_per_second = self.corre / total_runtime_seconds
+            self.covered_voxels_per_second = self.correctly_covered_voxel_count / total_runtime_seconds
             
     def evaluate(self, total_runtime_seconds: float) -> None:
         

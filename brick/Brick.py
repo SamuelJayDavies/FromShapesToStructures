@@ -66,13 +66,33 @@ class Brick:
         return self.brickType.area()
     
     def position(self) -> tuple[int, int, int]:
+        """ Returns the position of the brick in y, z x order
+
+        Returns:
+            tuple[int, int, int]: The position of the brick in y, z x order
+        """
         return (self.y, self.z, self.x)
     
     def is_placed(self) -> bool:
+        """ Returns if the brick has been placed (has an assigned brick_id)
+
+        Returns:
+            bool: True if the brick has been placed, False otherwise
+        """
         return self.brick_id is not None
     
     def place_brick(self, brick_id: int) -> None:
+        """ Places the brick with the assigned brick_id
+
+        Args:
+            brick_id (int): The brick_id of the newly placed brick
+        """
         self.brick_id = brick_id
 
     def __repr__(self) -> str:
+        """ Representation of the brick in str
+
+        Returns:
+            str: Output String
+        """
         return "Brick Placement - Type: " + self.brickType.name + " is placed: " + str(self.is_placed()) + ", Position: (" + str(self.y) + ", " + str(self.z) + ", " + str(self.x) + "), Orientation: (" + str(self.orientation[0]) + ", " + str(self.orientation[1]) + "), Brick  ID: " + str(self.brick_id)

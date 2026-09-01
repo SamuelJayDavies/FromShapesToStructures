@@ -243,6 +243,7 @@ class StructuralRepairController:
             required_repair_clusters = self.get_required_repair_clusters()
             
             if not required_repair_clusters:
+                self.record_final_structural_statistics()
                 return True
             
             current_required_cluster_ids = {self._get_cluster_unique_id(cluster) for cluster in required_repair_clusters}
@@ -252,6 +253,7 @@ class StructuralRepairController:
             repairable_clusters = [cluster for cluster in required_repair_clusters if self._get_cluster_unique_id(cluster) not in unresolved_cluster_ids]
             
             if not repairable_clusters:
+                self.record_final_structural_statistics()
                 return False
             
             current_cluster = repairable_clusters[0]

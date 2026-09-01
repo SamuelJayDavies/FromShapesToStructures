@@ -82,14 +82,14 @@ class EvaluationStatistics:
         
         self.total_support_deficit = sum(violation.support_diff for violation in violations)
         
-        active_bricks = self._get_active_bricks()
+        active_bricks_non_ground_bricks = [brick for brick in self._get_active_bricks() if brick.y > 0]
         
-        if not active_bricks:
+        if not active_bricks_non_ground_bricks:
             self.mean_support_ratio = 0.0
         else:
-            total_support_ratio = sum(self.construction_grid.calculate_support_ratio(brick) for brick in active_bricks)
+            total_support_ratio = sum(self.construction_grid.calculate_support_ratio(brick) for brick in active_bricks_non_ground_bricks)
             
-            self.mean_support_ratio = total_support_ratio / len(active_bricks)
+            self.mean_support_ratio = total_support_ratio / len(active_bricks_non_ground_bricks)
             
     def evaluate_computational_effectiveness(self, total_runtime_seconds: float) -> None:
         

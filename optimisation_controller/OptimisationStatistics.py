@@ -53,6 +53,7 @@ class OptimisationStatistics:
         self.final_violation_count = 0
         self.final_floating_brick_count = 0
         self.final_required_repair_cluster_count = 0
+        self.final_structurally_accepted_weak_brick_ids: set[int] = set()
         
         self.resolved_violation_count = 0
         self.new_violation_count = 0
@@ -85,7 +86,7 @@ class OptimisationStatistics:
         self.structurally_sound_weak_brick_count = len(self.structurally_sound_weak_brick_ids)
         
     def record_final_basic_audit(self, violations: list) -> None:
-        self.final_violation_brick_ids = {violation.brick_id for violation in violations if violation.brick_id}
+        self.final_violation_brick_ids = {violation.brick_id for violation in violations}
         
         self.final_violation_count = len(self.final_violation_brick_ids)
         
@@ -97,6 +98,7 @@ class OptimisationStatistics:
         
     def record_final_cluster_audit(self, cluster_repair_results: list[tuple]) -> None:
         self.final_required_repair_cluster_count = sum(1 for _, required_repair in cluster_repair_results if required_repair)
+        self.final_structurally_accepted_weak_brick_ids = {violation.brick_id for cluster, required_repair in cluster_repair_results if not required_repair for violation in cluster.violations}
         self.unresolved_cluster_count = self.final_required_repair_cluster_count
     
     def _get_structurally_sound_weak_brick_ids(self, cluster_audit_result: list[tuple]) -> set[int]:

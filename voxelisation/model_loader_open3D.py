@@ -25,5 +25,5 @@ def view_model(model_class, model_number, model_dataset) -> None:
 
 #view_model("bathtub", 1, "model_net")
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     view_model("bottle", 1, "shapenet")

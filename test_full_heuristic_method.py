@@ -25,7 +25,7 @@ import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 from optimisation_controller.StructuralViolationDetector import StructuralViolationDetector
 
-MODEL_CLASS: str = "airplane"
+MODEL_CLASS: str = "bottle"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 

@@ -25,7 +25,7 @@ import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 from optimisation_controller.StructuralViolationDetector import StructuralViolationDetector
 
-MODEL_CLASS: str = "bottle"
+MODEL_CLASS: str = "airplane"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
@@ -166,7 +166,7 @@ def main(minimum_support_ratio: float) -> None:
         print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
                 
     # Stage 4
-    visualise_results(basic_finished_structure.finished_grid)
+    #visualise_results(basic_finished_structure.finished_grid)
     
     #visualise_results(informed_finished_structure.finished_grid)
 

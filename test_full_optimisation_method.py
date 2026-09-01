@@ -45,7 +45,7 @@ from visualisation.BrickConstructionVisualiser import BrickConstructionVisualise
 import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 
-MODEL_CLASS: str = "bottle"
+MODEL_CLASS: str = "airplane"
 MODEL_NUMBER: int = 1
 MODEL_DATASET: str = "shapenet"
 
@@ -58,7 +58,7 @@ IS_MODEL_UPSIDE_DOWN: bool = False
 VISUALISE_VIOLATIONS: bool = True
 
 MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION//16)
-BUILDING_BRICK_VOCAB = BASIC_BRICK_VOCABULARY
+BUILDING_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
 REPLACEMENT_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
 # Sofas need a support ratio of 0.25
 
@@ -261,10 +261,10 @@ def main(minimum_support_ratio: float) -> None:
         print_blocked_layer_diagnostics(finished_structure=basic_finished_structure)
                 
     # Stage 4
-    visualise_results(basic_finished_structure.finished_grid, basic_violations)
+    #visualise_results(basic_finished_structure.finished_grid, basic_violations)
     
     final_violations = StructuralViolationDetector(minimum_support_ratio).detect_violations(basic_finished_structure.construction_grid)
-    visualise_results(basic_finished_structure.finished_grid, final_violations)
+    #visualise_results(basic_finished_structure.finished_grid, final_violations)
     
     #visualise_results(informed_finished_structure.finished_grid)
 

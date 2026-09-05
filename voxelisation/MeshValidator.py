@@ -1,9 +1,6 @@
 import open3d
 import numpy as np
 
-# https://www.open3d.org/docs/release/tutorial/geometry/mesh.html?utm_source=chatgpt.com 
-# This was a good resource for understanding the mesh properties and how to validate them.
-
 class MeshValidator:
     """ Class to validate the mesh and its properties.
     

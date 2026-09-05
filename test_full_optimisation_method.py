@@ -46,7 +46,8 @@ import time
 from evaluation.EvaluationStatistics import EvaluationStatistics
 
 MODEL_CLASS: str = "airplane"
-MODEL_NUMBER: int = 1
+MODEL_NUMBER: int = 1 # Mug 4 # Mug 5 # Mug 7
+
 MODEL_DATASET: str = "shapenet"
 
 RESOLUTION: int = 32
@@ -55,7 +56,7 @@ MINIMUM_SUPPORT_RATIO = 0.5
 FINAL_SUPPORT_RATIO = MINIMUM_SUPPORT_RATIO # Change if you want sofa example
 
 IS_MODEL_UPSIDE_DOWN: bool = False
-VISUALISE_VIOLATIONS: bool = True
+VISUALISE_VIOLATIONS: bool = False
 
 MAXIMUM_UNSUPPORTED_DISTANCE_ACCEPTED: int = max(1, RESOLUTION//16)
 BUILDING_BRICK_VOCAB = ADVANCED_BRICK_VOCABULARY
@@ -133,6 +134,8 @@ def run_optimisation(finished_structure: HeuristicResult, brick_vocab: Brick_voc
     successful_replacement_repair = repair_controller.repair_with_replacement()
     
     successful_merge_repair = repair_controller.repair_with_merging()
+    
+    repair_controller.record_final_structural_statistics()
 
     print(
         "Replacement phase successful:",
@@ -264,7 +267,7 @@ def main(minimum_support_ratio: float) -> None:
     #visualise_results(basic_finished_structure.finished_grid, basic_violations)
     
     final_violations = StructuralViolationDetector(minimum_support_ratio).detect_violations(basic_finished_structure.construction_grid)
-    #visualise_results(basic_finished_structure.finished_grid, final_violations)
+    visualise_results(basic_finished_structure.finished_grid, final_violations)
     
     #visualise_results(informed_finished_structure.finished_grid)
 
@@ -272,6 +275,8 @@ def main(minimum_support_ratio: float) -> None:
 def visualise_results(finished_grid: np.ndarray, violations: list[StructuralViolation] | None) -> None:
     if VISUALISE_VIOLATIONS:
         brick_statuses = create_support_visualisation_statuses(violations)
+    else:
+        brick_statuses = None
         
     visualiser = BrickConstructionVisualiser(finished_grid, brick_statuses)
     

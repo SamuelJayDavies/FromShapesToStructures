@@ -123,6 +123,10 @@ class StructuralRepairController:
             if not required_repair_clusters:
                 self.optimisation_statistics.unresolved_cluster_count = 0
                 
+                post_replacement_violations = self.violation_detector.detect_violations(self.construction_grid)
+                
+                self.optimisation_statistics.record_post_replacement_audit(post_replacement_violations)
+                
                 self.record_final_structural_statistics()
                 return True
             else:
@@ -132,6 +136,13 @@ class StructuralRepairController:
                 
                 if not repairable_clusters:
                     self.optimisation_statistics.unresolved_cluster_count = len(required_repair_clusters)
+                    
+                    
+                    post_replacement_violations = self.violation_detector.detect_violations(self.construction_grid)
+                    
+                    
+                    self.optimisation_statistics.record_post_replacement_audit(post_replacement_violations)
+                    
                     
                     self.record_final_structural_statistics()
                     return False
@@ -177,6 +188,7 @@ class StructuralRepairController:
             
     def record_final_structural_statistics(self) -> None:
         final_violations = self.violation_detector.detect_violations(self.construction_grid)
+        self.optimisation_statistics.record_post_merge_audit(final_violations)
         
         self.optimisation_statistics.record_final_basic_audit(final_violations)
         
@@ -229,6 +241,7 @@ class StructuralRepairController:
         merged_brick, target_brick_id, neighbour_brick_id, _, _, _ = best_merge
         
         self.construction_grid.merge_bricks(target_brick_id, neighbour_brick_id, merged_brick)
+        self.optimisation_statistics.record_successful_merge()
         
         return True
     

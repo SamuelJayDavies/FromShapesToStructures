@@ -35,6 +35,16 @@ class OptimisationStatistics:
         self.replacement_attempt_count = 0
         self.successful_replacement_count = 0
         self.failed_replacement_count = 0
+
+        self.post_replacement_violation_brick_ids: set[int] = set()
+        self.resolved_by_replacement_brick_ids: set[int] = set()
+
+        # Merge Repair Stage
+        self.successful_merge_count = 0
+
+        self.resolved_by_merge_brick_ids: set[int] = set()
+        
+        
         
         # Post Results
         self.generated_replacement_candidate_count = 0
@@ -48,7 +58,7 @@ class OptimisationStatistics:
         self.grounded_attachment_replacement_count = 0
         
         # Final Results
-        self.final_violaiton_brick_ids: set[int] = set()
+        self.final_violation_brick_ids: set[int] = set()
         
         self.final_violation_count = 0
         self.final_floating_brick_count = 0
@@ -170,6 +180,39 @@ class OptimisationStatistics:
         if grounded_attachment_count > 0:
             self.grounded_attachment_replacement_count += 1
             
+    def record_post_replacement_audit(self, violations: list) -> None:
+    
+        self.post_replacement_violation_brick_ids = {
+            violation.brick_id
+            for violation in violations
+        }
+        
+        self.resolved_by_replacement_brick_ids = (
+            self.initial_violation_brick_ids
+            - self.post_replacement_violation_brick_ids
+        )
+        
+    def record_successful_merge(self) -> None:
+        self.successful_merge_count += 1
+
+
+    def record_post_merge_audit(self, violations: list) -> None:
+        
+        post_merge_violation_brick_ids = {
+            violation.brick_id
+            for violation in violations
+        }
+        
+        initial_violations_remaining_after_replacement = (
+            self.initial_violation_brick_ids
+            & self.post_replacement_violation_brick_ids
+        )
+        
+        self.resolved_by_merge_brick_ids = (
+            initial_violations_remaining_after_replacement
+            - post_merge_violation_brick_ids
+        )
+            
     def record_generated_replacement_candidates(self, candidate_count: int) -> None:
         self.generated_replacement_candidate_count += candidate_count
         
@@ -248,7 +291,15 @@ class OptimisationStatistics:
         print("Final Partially-Supported but Structurally Accepted Brick Count: " + str(len(structurally_accepted_partially_supported_ids)))
         print("")
         
-        print("Initial Violations Resolved Through Modification: " + str(len(resolved_initial_violation_ids)))
+        print("Successful Replacements: " + str(self.successful_replacement_count))
+        print("Successful Merges: " + str(self.successful_merge_count))
+        print("")
+        
+        print("Initial Violations Resolved by Replacement: " + str(len(self.resolved_by_replacement_brick_ids)))
+
+        print("Initial Violations Resolved by Merging: " + str(len(self.resolved_by_merge_brick_ids)))
+
+        print("Reduction in initial local violations: " + str(len(resolved_initial_violation_ids)))
         print("Initial Violations Structurally Accounted For: " + str(len(accounted_for_ids)))
         print("Initial Violations Structurally Unaccounted For: " + str(len(unaccounted_for_ids)))
         print("")

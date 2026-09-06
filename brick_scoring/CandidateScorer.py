@@ -78,8 +78,6 @@ class CandidateScorer:
             gap_penalty = len(new_alone_coordinates) / remaining_empty_cells
 
             return gap_penalty
-        
-        # MENTION IN REPORT THE DOWNSIDES OF THIS METHOD, WHICH CAN BE FOUND IN CHAPTER 9
 
 
     def calculate_total_score(self, brick_efficiency_score: float, brick_support_score: float, brick_connectivity_score: float, brick_gap_penalty: float) -> float:
